@@ -98,6 +98,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("GET /api/v1/auth/google/login", s.authHandler.GoogleLogin)
 	mux.HandleFunc("GET /api/v1/auth/google/callback", s.authHandler.GoogleCallback)
 	mux.HandleFunc("POST /api/v1/auth/refresh", s.authHandler.RefreshToken)
+	mux.HandleFunc("POST /api/v1/auth/logout", s.authHandler.Logout)
 
 	// Protected Routes
 	// User Routes

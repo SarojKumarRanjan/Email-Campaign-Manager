@@ -38,12 +38,14 @@ func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.VerifyEmail(&req); err != nil {
+	resp, err := h.svc.VerifyEmail(&req)
+	if err != nil {
 		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.SuccessResponse(w, http.StatusOK, "Email verified successfully", nil)
+	utils.SetTokenCookies(w, resp.AccessToken, resp.RefreshToken)
+	utils.SuccessResponse(w, http.StatusOK, "Email verified successfully", resp)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +61,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	utils.SetTokenCookies(w, resp.AccessToken, resp.RefreshToken)
 	utils.SuccessResponse(w, http.StatusOK, "Login successful", resp)
 }
 
@@ -80,6 +83,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	utils.SetTokenCookies(w, resp.AccessToken, resp.RefreshToken)
 	utils.SuccessResponse(w, http.StatusOK, "Google login successful", resp)
 }
 
@@ -97,4 +101,9 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SuccessResponse(w, http.StatusOK, "Token refreshed successfully", resp)
+}
+
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	utils.ClearTokenCookies(w)
+	utils.SuccessResponse(w, http.StatusOK, "Logged out successfully", nil)
 }

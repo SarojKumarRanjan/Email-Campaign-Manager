@@ -20,7 +20,7 @@ import (
 
 type AuthService interface {
 	Register(req *types.RegisterRequest) error
-	VerifyEmail(req *types.VerifyEmailRequest) error
+	VerifyEmail(req *types.VerifyEmailRequest) (*types.LoginResponse, error)
 	Login(req *types.LoginRequest) (*types.LoginResponse, error)
 	GetGoogleLoginURL() string
 	GoogleCallback(code string) (*types.LoginResponse, error)
@@ -85,17 +85,36 @@ func (s *authService) Register(req *types.RegisterRequest) error {
 	return nil
 }
 
-func (s *authService) VerifyEmail(req *types.VerifyEmailRequest) error {
+func (s *authService) VerifyEmail(req *types.VerifyEmailRequest) (*types.LoginResponse, error) {
 	storedOTP, err := s.repo.GetOTP(req.Email)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if storedOTP != req.OTP {
-		return errors.New("invalid otp")
+		return nil, errors.New("invalid otp")
 	}
 
-	return s.repo.VerifyUser(req.Email)
+	if err := s.repo.VerifyUser(req.Email); err != nil {
+		return nil, err
+	}
+
+	// Auto-login: Get user and generate tokens
+	user, _, err := s.repo.GetUserByEmail(req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, refreshToken, err := utils.GenerateTokenPair(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         *user,
+	}, nil
 }
 
 func (s *authService) Login(req *types.LoginRequest) (*types.LoginResponse, error) {
