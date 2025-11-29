@@ -19,40 +19,40 @@ func NewTemplateHandler(svc service.TemplateService) *TemplateHandler {
 func (h *TemplateHandler) CreateTemplate(w http.ResponseWriter, r *http.Request) {
 	var req types.CreateTemplateRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.CreateTemplate(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.SuccessResponse(w, http.StatusCreated, "Template created successfully", nil)
 }
 
 func (h *TemplateHandler) GetTemplate(w http.ResponseWriter, r *http.Request) {
-	// TODO: Get ID from URL params
+	// TODO: Parse ID from URL
 	id := uint64(1) // Placeholder
 
 	template, err := h.svc.GetTemplate(id)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, template)
+	utils.SuccessResponse(w, http.StatusOK, "Template retrieved successfully", template)
 }
 
 func (h *TemplateHandler) ListTemplates(w http.ResponseWriter, r *http.Request) {
 	var filter types.TemplateFilter
-	// TODO: Parse query params into filter
+	// TODO: Parse query params
 
 	templates, err := h.svc.ListTemplates(&filter)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, templates)
+	utils.SuccessResponse(w, http.StatusOK, "Templates retrieved successfully", templates)
 }

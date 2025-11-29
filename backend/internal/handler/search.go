@@ -17,17 +17,17 @@ func NewSearchHandler(svc service.SearchService) *SearchHandler {
 }
 
 func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
-	var req types.SearchRequest
-	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Query parameter 'q' is required")
 		return
 	}
 
-	resp, err := h.svc.Search(&req)
+	results, err := h.svc.Search(&types.SearchRequest{Query: query})
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, resp)
+	utils.SuccessResponse(w, http.StatusOK, "Search results retrieved successfully", results)
 }

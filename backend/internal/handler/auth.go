@@ -19,47 +19,47 @@ func NewAuthHandler(svc service.AuthService) *AuthHandler {
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req types.RegisterRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.Register(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, map[string]string{"message": "Please check your email for OTP"})
+	utils.SuccessResponse(w, http.StatusCreated, "Please check your email for OTP", nil)
 }
 
 func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	var req types.VerifyEmailRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.VerifyEmail(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "Email verified successfully"})
+	utils.SuccessResponse(w, http.StatusOK, "Email verified successfully", nil)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req types.LoginRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	resp, err := h.svc.Login(&req)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusUnauthorized)
+		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, resp)
+	utils.SuccessResponse(w, http.StatusOK, "Login successful", resp)
 }
 
 func (h *AuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
@@ -70,31 +70,31 @@ func (h *AuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		utils.ErrorJSON(w, nil, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, "Missing code")
 		return
 	}
 
 	resp, err := h.svc.GoogleCallback(code)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, resp)
+	utils.SuccessResponse(w, http.StatusOK, "Google login successful", resp)
 }
 
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	var req types.RefreshTokenRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	resp, err := h.svc.RefreshToken(&req)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusUnauthorized)
+		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, resp)
+	utils.SuccessResponse(w, http.StatusOK, "Token refreshed successfully", resp)
 }

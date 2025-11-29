@@ -125,14 +125,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
-
-	utils.WriteJSON(w, http.StatusOK, resp)
+	resp := map[string]string{"message": "Hello World"}
+	utils.SuccessResponse(w, http.StatusOK, "Hello World", resp)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	stats := s.db.Health()
-
-	utils.WriteJSON(w, http.StatusOK, stats)
+	utils.SuccessResponse(w, http.StatusOK, "Healthy", s.db.Health())
 }

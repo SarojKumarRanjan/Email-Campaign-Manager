@@ -19,29 +19,29 @@ func NewContactHandler(svc service.ContactService) *ContactHandler {
 func (h *ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 	var req types.CreateContactRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.CreateContact(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.SuccessResponse(w, http.StatusCreated, "Contact created successfully", nil)
 }
 
 func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
-	// TODO: Get ID from URL params
+	// TODO: Parse ID from URL
 	id := uint64(1) // Placeholder
 
 	contact, err := h.svc.GetContact(id)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, contact)
+	utils.SuccessResponse(w, http.StatusOK, "Contact retrieved successfully", contact)
 }
 
 func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
@@ -50,9 +50,9 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 
 	contacts, err := h.svc.ListContacts(&filter)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, contacts)
+	utils.SuccessResponse(w, http.StatusOK, "Contacts retrieved successfully", contacts)
 }

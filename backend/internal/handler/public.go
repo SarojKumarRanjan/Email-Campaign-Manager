@@ -19,14 +19,14 @@ func NewPublicHandler(svc service.PublicService) *PublicHandler {
 func (h *PublicHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	var req types.UnsubscribeRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.Unsubscribe(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, nil)
+	utils.SuccessResponse(w, http.StatusOK, "Unsubscribed successfully", nil)
 }

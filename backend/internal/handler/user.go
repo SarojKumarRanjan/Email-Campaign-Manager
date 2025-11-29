@@ -17,16 +17,17 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	// TODO: Get user ID from context
+	// TODO: Get user ID from context (middleware)
+	// userID := r.Context().Value("userID").(uint64)
 	userID := uint64(1) // Placeholder
 
 	user, err := h.svc.GetUser(userID)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, user)
+	utils.SuccessResponse(w, http.StatusOK, "User retrieved successfully", user)
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -35,14 +36,14 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var req types.UpdateUserRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.UpdateUser(userID, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, nil)
+	utils.SuccessResponse(w, http.StatusOK, "User updated successfully", nil)
 }

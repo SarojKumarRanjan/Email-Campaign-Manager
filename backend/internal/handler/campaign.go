@@ -19,40 +19,40 @@ func NewCampaignHandler(svc service.CampaignService) *CampaignHandler {
 func (h *CampaignHandler) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 	var req types.CreateCampaignRequest
 	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.svc.CreateCampaign(&req); err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.SuccessResponse(w, http.StatusCreated, "Campaign created successfully", nil)
 }
 
 func (h *CampaignHandler) GetCampaign(w http.ResponseWriter, r *http.Request) {
-	// TODO: Get ID from URL params
+	// TODO: Parse ID from URL
 	id := uint64(1) // Placeholder
 
 	campaign, err := h.svc.GetCampaign(id)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, campaign)
+	utils.SuccessResponse(w, http.StatusOK, "Campaign retrieved successfully", campaign)
 }
 
 func (h *CampaignHandler) ListCampaigns(w http.ResponseWriter, r *http.Request) {
 	var filter types.CampaignFilter
-	// TODO: Parse query params into filter
+	// TODO: Parse query params
 
 	campaigns, err := h.svc.ListCampaigns(&filter)
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, campaigns)
+	utils.SuccessResponse(w, http.StatusOK, "Campaigns retrieved successfully", campaigns)
 }

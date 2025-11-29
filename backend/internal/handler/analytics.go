@@ -18,9 +18,9 @@ func NewAnalyticsHandler(svc service.AnalyticsService) *AnalyticsHandler {
 func (h *AnalyticsHandler) GetDashboardStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := h.svc.GetDashboardStats()
 	if err != nil {
-		utils.ErrorJSON(w, err, http.StatusInternalServerError)
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, stats)
+	utils.SuccessResponse(w, http.StatusOK, "Dashboard stats retrieved successfully", stats)
 }
