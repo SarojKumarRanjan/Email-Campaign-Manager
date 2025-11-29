@@ -1,0 +1,156 @@
+{
+    "auth": {
+        "register": "/api/v1/auth/register",
+        "login": "/api/v1/auth/login",
+        "logout": "/api/v1/auth/logout",
+        "refresh_token": "/api/v1/auth/refresh",
+        "verify_email": "/api/v1/auth/verify-email",
+        "forgot_password": "/api/v1/auth/forgot-password",
+        "reset_password": "/api/v1/auth/reset-password",
+        "get_profile": "/api/v1/auth/profile",
+        "update_profile": "/api/v1/auth/profile"
+    },
+    "users": {
+        "get_current_user": "/api/v1/users/me",
+        "update_user": "/api/v1/users/me",
+        "delete_user": "/api/v1/users/me",
+        "change_password": "/api/v1/users/me/password"
+    },
+    "user_settings": {
+        "get_settings": "/api/v1/settings",
+        "update_settings": "/api/v1/settings",
+        "update_smtp": "/api/v1/settings/smtp",
+        "test_smtp": "/api/v1/settings/smtp/test",
+        "get_limits": "/api/v1/settings/limits",
+        "update_limits": "/api/v1/settings/limits"
+    },
+    "contacts": {
+        "list_contacts": "/api/v1/contacts",
+        "create_contact": "/api/v1/contacts",
+        "get_contact": "/api/v1/contacts/:id",
+        "update_contact": "/api/v1/contacts/:id",
+        "delete_contact": "/api/v1/contacts/:id",
+        "bulk_create_contacts": "/api/v1/contacts/bulk",
+        "bulk_update_contacts": "/api/v1/contacts/bulk/update",
+        "bulk_delete_contacts": "/api/v1/contacts/bulk/delete",
+        "import_contacts_csv": "/api/v1/contacts/import/csv",
+        "export_contacts_csv": "/api/v1/contacts/export/csv",
+        "get_contact_by_email": "/api/v1/contacts/email/:email",
+        "get_contact_activity": "/api/v1/contacts/:id/activity",
+        "subscribe_contact": "/api/v1/contacts/:id/subscribe",
+        "unsubscribe_contact": "/api/v1/contacts/:id/unsubscribe"
+    },
+    "tags": {
+        "list_tags": "/api/v1/tags",
+        "create_tag": "/api/v1/tags",
+        "get_tag": "/api/v1/tags/:id",
+        "update_tag": "/api/v1/tags/:id",
+        "delete_tag": "/api/v1/tags/:id",
+        "get_tag_contacts": "/api/v1/tags/:id/contacts",
+        "add_contacts_to_tag": "/api/v1/tags/:id/contacts",
+        "remove_contacts_from_tag": "/api/v1/tags/:id/contacts/remove"
+    },
+    "contact_tags": {
+        "add_tag_to_contact": "/api/v1/contacts/:id/tags",
+        "remove_tag_from_contact": "/api/v1/contacts/:id/tags/:tagId",
+        "get_contact_tags": "/api/v1/contacts/:id/tags"
+    },
+    "templates": {
+        "list_templates": "/api/v1/templates",
+        "create_template": "/api/v1/templates",
+        "get_template": "/api/v1/templates/:id",
+        "update_template": "/api/v1/templates/:id",
+        "delete_template": "/api/v1/templates/:id",
+        "duplicate_template": "/api/v1/templates/:id/duplicate",
+        "set_default_template": "/api/v1/templates/:id/set-default",
+        "preview_template": "/api/v1/templates/:id/preview",
+        "upload_template_image": "/api/v1/templates/upload/image"
+    },
+    "campaigns": {
+        "list_campaigns": "/api/v1/campaigns",
+        "create_campaign": "/api/v1/campaigns",
+        "get_campaign": "/api/v1/campaigns/:id",
+        "update_campaign": "/api/v1/campaigns/:id",
+        "delete_campaign": "/api/v1/campaigns/:id",
+        "duplicate_campaign": "/api/v1/campaigns/:id/duplicate",
+        "schedule_campaign": "/api/v1/campaigns/:id/schedule",
+        "send_campaign": "/api/v1/campaigns/:id/send",
+        "pause_campaign": "/api/v1/campaigns/:id/pause",
+        "resume_campaign": "/api/v1/campaigns/:id/resume",
+        "cancel_campaign": "/api/v1/campaigns/:id/cancel",
+        "get_campaign_stats": "/api/v1/campaigns/:id/stats",
+        "get_campaign_recipients": "/api/v1/campaigns/:id/recipients",
+        "send_test_email": "/api/v1/campaigns/:id/test",
+        "preview_campaign": "/api/v1/campaigns/:id/preview"
+    },
+    "campaign_tags": {
+        "add_tag_to_campaign": "/api/v1/campaigns/:id/tags",
+        "remove_tag_from_campaign": "/api/v1/campaigns/:id/tags/:tagId",
+        "get_campaign_tags": "/api/v1/campaigns/:id/tags",
+        "update_campaign_tags": "/api/v1/campaigns/:id/tags"
+    },
+    "campaign_recipients": {
+        "list_recipients": "/api/v1/campaigns/:campaignId/recipients",
+        "get_recipient": "/api/v1/campaigns/:campaignId/recipients/:id",
+        "get_recipient_events": "/api/v1/campaigns/:campaignId/recipients/:id/events",
+        "retry_failed_recipient": "/api/v1/campaigns/:campaignId/recipients/:id/retry",
+        "bulk_retry_failed": "/api/v1/campaigns/:campaignId/recipients/retry-failed",
+        "get_failed_recipients": "/api/v1/campaigns/:campaignId/recipients/failed",
+        "get_delivered_recipients": "/api/v1/campaigns/:campaignId/recipients/delivered",
+        "get_bounced_recipients": "/api/v1/campaigns/:campaignId/recipients/bounced",
+        "get_opened_recipients": "/api/v1/campaigns/:campaignId/recipients/opened",
+        "get_clicked_recipients": "/api/v1/campaigns/:campaignId/recipients/clicked"
+    },
+    "email_events": {
+        "list_events": "/api/v1/campaigns/:campaignId/events",
+        "get_event": "/api/v1/campaigns/:campaignId/events/:id",
+        "track_open": "/api/v1/track/open/:trackingId",
+        "track_click": "/api/v1/track/click/:trackingId",
+        "webhook_bounce": "/api/v1/webhooks/bounce",
+        "webhook_complaint": "/api/v1/webhooks/complaint",
+        "webhook_delivery": "/api/v1/webhooks/delivery"
+    },
+    "retry_queue": {
+        "list_retry_queue": "/api/v1/retry-queue",
+        "get_retry_item": "/api/v1/retry-queue/:id",
+        "process_retry_queue": "/api/v1/retry-queue/process",
+        "clear_retry_queue": "/api/v1/retry-queue/clear"
+    },
+    "analytics": {
+        "get_dashboard_stats": "/api/v1/analytics/dashboard",
+        "get_campaign_analytics": "/api/v1/analytics/campaigns/:id",
+        "get_campaign_timeline": "/api/v1/analytics/campaigns/:id/timeline",
+        "get_campaign_comparison": "/api/v1/analytics/campaigns/compare",
+        "get_contact_engagement": "/api/v1/analytics/contacts/:id/engagement",
+        "get_tag_performance": "/api/v1/analytics/tags/:id/performance",
+        "get_email_performance": "/api/v1/analytics/email-performance",
+        "get_send_volume": "/api/v1/analytics/send-volume",
+        "get_engagement_trends": "/api/v1/analytics/engagement-trends",
+        "export_analytics": "/api/v1/analytics/export"
+    },
+    "reports": {
+        "generate_campaign_report": "/api/v1/reports/campaign/:id",
+        "generate_monthly_report": "/api/v1/reports/monthly",
+        "generate_yearly_report": "/api/v1/reports/yearly",
+        "list_reports": "/api/v1/reports",
+        "download_report": "/api/v1/reports/:id/download"
+    },
+    "dashboard": {
+        "get_overview": "/api/v1/dashboard/overview",
+        "get_recent_campaigns": "/api/v1/dashboard/recent-campaigns",
+        "get_recent_activity": "/api/v1/dashboard/activity",
+        "get_quick_stats": "/api/v1/dashboard/quick-stats"
+    },
+    "search": {
+        "search_contacts": "/api/v1/search/contacts",
+        "search_campaigns": "/api/v1/search/campaigns",
+        "search_templates": "/api/v1/search/templates",
+        "global_search": "/api/v1/search"
+    },
+    "public": {
+        "unsubscribe": "/api/v1/public/unsubscribe/:token",
+        "resubscribe": "/api/v1/public/resubscribe/:token",
+        "update_preferences": "/api/v1/public/preferences/:token",
+        "track_pixel": "/api/v1/public/pixel/:trackingId.png"
+    }
+}
