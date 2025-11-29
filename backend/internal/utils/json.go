@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"email_campaign/internal/logger"
 )
 
 type JSONResponse struct {
@@ -40,6 +42,11 @@ func SuccessResponse(w http.ResponseWriter, status int, message string, data int
 }
 
 func ErrorResponse(w http.ResponseWriter, status int, message string) error {
+	logger.Error("API Error", map[string]interface{}{
+		"status":  status,
+		"message": message,
+	})
+
 	return WriteJSON(w, status, JSONResponse{
 		Error:   true,
 		Message: message,

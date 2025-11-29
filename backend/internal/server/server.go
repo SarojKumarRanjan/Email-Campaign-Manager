@@ -8,6 +8,7 @@ import (
 	"email_campaign/internal/config"
 	"email_campaign/internal/database"
 	"email_campaign/internal/handler"
+	"email_campaign/internal/logger"
 	"email_campaign/internal/middleware"
 	"email_campaign/internal/repository"
 	"email_campaign/internal/service"
@@ -30,6 +31,11 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config, db database.Service) *http.Server {
+	// Initialize Logger
+	if err := logger.Init("app.log"); err != nil {
+		fmt.Printf("Failed to initialize logger: %v\n", err)
+	}
+
 	// Repositories
 	sqlDB := db.DB()
 	authRepo := repository.NewAuthRepository(sqlDB)
@@ -76,7 +82,7 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
-		Handler:      NewServer.RegisterRoutes(),
+		Handler:      middleware.RequestLogger(NewServer.RegisterRoutes()),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
