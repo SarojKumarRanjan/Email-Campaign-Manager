@@ -48,7 +48,7 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	publicRepo := repository.NewPublicRepository(sqlDB)
 
 	// Services
-	authSvc := service.NewAuthService(authRepo)
+	authSvc := service.NewAuthService(authRepo, userRepo)
 	userSvc := service.NewUserService(userRepo)
 	contactSvc := service.NewContactService(contactRepo)
 	templateSvc := service.NewTemplateService(templateRepo)
@@ -105,10 +105,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("GET /api/v1/auth/google/callback", s.authHandler.GoogleCallback)
 	mux.HandleFunc("POST /api/v1/auth/refresh", s.authHandler.RefreshToken)
 	mux.HandleFunc("POST /api/v1/auth/logout", s.authHandler.Logout)
+	mux.HandleFunc("POST /api/v1/auth/forgot-password", s.authHandler.ForgotPassword)
+	mux.Handle("GET /api/v1/auth/profile", middleware.AuthMiddleware(http.HandlerFunc(s.authHandler.GetProfile)))
+	mux.Handle("PUT /api/v1/auth/profile", middleware.AuthMiddleware(http.HandlerFunc(s.authHandler.UpdateProfile)))
 
 	// Protected Routes
 	// User Routes
 	mux.Handle("GET /api/v1/users/me", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.GetCurrentUser)))
+	mux.Handle("PUT /api/v1/users/me", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.UpdateCurrentUser)))
+	mux.Handle("DELETE /api/v1/users/me", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.DeleteCurrentUser)))
+	mux.Handle("POST /api/v1/users/me/password", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.ChangePassword)))
 
 	// Contact Routes
 	mux.Handle("GET /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ListContacts)))

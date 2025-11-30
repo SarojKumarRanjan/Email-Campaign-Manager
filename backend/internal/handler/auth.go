@@ -107,3 +107,55 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	utils.ClearTokenCookies(w)
 	utils.SuccessResponse(w, http.StatusOK, "Logged out successfully", nil)
 }
+
+func (h *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var req types.ForgotPasswordRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.svc.ForgotPassword(req.Email); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "If your email is registered, you will receive a password reset link", nil)
+}
+
+func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	user, err := h.svc.GetProfile(userID)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Profile retrieved successfully", user)
+}
+
+func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req types.UpdateUserRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.svc.UpdateProfile(userID, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Profile updated successfully", nil)
+}

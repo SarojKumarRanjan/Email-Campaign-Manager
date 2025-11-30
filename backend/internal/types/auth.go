@@ -36,8 +36,8 @@ type RefreshTokenRequest struct {
 }
 
 type VerifyEmailRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	OTP   string `json:"otp" binding:"required"`
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
 }
 
 type ForgotPasswordRequest struct {

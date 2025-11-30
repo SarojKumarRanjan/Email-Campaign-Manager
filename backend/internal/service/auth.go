@@ -25,17 +25,22 @@ type AuthService interface {
 	GetGoogleLoginURL() string
 	GoogleCallback(code string) (*types.LoginResponse, error)
 	RefreshToken(req *types.RefreshTokenRequest) (*types.LoginResponse, error)
+	ForgotPassword(email string) error
+	GetProfile(userID uint64) (*types.User, error)
+	UpdateProfile(userID uint64, req *types.UpdateUserRequest) error
 }
 
 type authService struct {
 	repo       repository.AuthRepository
+	userRepo   repository.UserRepository
 	googleConf *oauth2.Config
 }
 
-func NewAuthService(repo repository.AuthRepository) AuthService {
+func NewAuthService(repo repository.AuthRepository, userRepo repository.UserRepository) AuthService {
 	cfg := config.Load()
 	return &authService{
-		repo: repo,
+		repo:     repo,
+		userRepo: userRepo,
 		googleConf: &oauth2.Config{
 			ClientID:     cfg.GoogleClientID,
 			ClientSecret: cfg.GoogleClientSecret,
@@ -208,6 +213,33 @@ func (s *authService) RefreshToken(req *types.RefreshTokenRequest) (*types.Login
 		RefreshToken: refreshToken,
 		// User: ... // We'd need to fetch user again if we want to return it
 	}, nil
+}
+
+func (s *authService) ForgotPassword(email string) error {
+	// TODO: Generate reset token and send email
+	// For now, just check if user exists
+	_, _, err := s.repo.GetUserByEmail(email)
+	if err != nil {
+		return errors.New("user not found")
+	}
+	return nil
+}
+
+func (s *authService) GetProfile(userID uint64) (*types.User, error) {
+	return s.userRepo.GetUserByID(userID)
+}
+
+func (s *authService) UpdateProfile(userID uint64, req *types.UpdateUserRequest) error {
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	user.CompanyName = req.CompanyName
+
+	return s.userRepo.UpdateUser(user)
 }
 
 func generateOTP() (string, error) {
