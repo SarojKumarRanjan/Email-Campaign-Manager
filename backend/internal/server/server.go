@@ -20,14 +20,17 @@ type Server struct {
 	db   database.Service
 
 	// Handlers
-	authHandler      *handler.AuthHandler
-	userHandler      *handler.UserHandler
-	contactHandler   *handler.ContactHandler
-	templateHandler  *handler.TemplateHandler
-	campaignHandler  *handler.CampaignHandler
-	analyticsHandler *handler.AnalyticsHandler
-	searchHandler    *handler.SearchHandler
-	publicHandler    *handler.PublicHandler
+	authHandler         *handler.AuthHandler
+	userHandler         *handler.UserHandler
+	contactHandler      *handler.ContactHandler
+	templateHandler     *handler.TemplateHandler
+	campaignHandler     *handler.CampaignHandler
+	analyticsHandler    *handler.AnalyticsHandler
+	searchHandler       *handler.SearchHandler
+	publicHandler       *handler.PublicHandler
+	settingsHandler     *handler.SettingsHandler
+	tagHandler          *handler.TagHandler
+	subscriptionHandler *handler.SubscriptionHandler
 }
 
 func NewServer(cfg *config.Config, db database.Service) *http.Server {
@@ -46,6 +49,9 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	analyticsRepo := repository.NewAnalyticsRepository(sqlDB)
 	searchRepo := repository.NewSearchRepository(sqlDB)
 	publicRepo := repository.NewPublicRepository(sqlDB)
+	settingsRepo := repository.NewSettingsRepository(sqlDB)
+	tagRepo := repository.NewTagRepository(sqlDB)
+	subscriptionRepo := repository.NewSubscriptionRepository(sqlDB)
 
 	// Services
 	authSvc := service.NewAuthService(authRepo, userRepo)
@@ -56,6 +62,9 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	analyticsSvc := service.NewAnalyticsService(analyticsRepo)
 	searchSvc := service.NewSearchService(searchRepo)
 	publicSvc := service.NewPublicService(publicRepo)
+	settingsSvc := service.NewSettingsService(settingsRepo)
+	tagSvc := service.NewTagService(tagRepo)
+	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authSvc)
@@ -66,18 +75,24 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	analyticsHandler := handler.NewAnalyticsHandler(analyticsSvc)
 	searchHandler := handler.NewSearchHandler(searchSvc)
 	publicHandler := handler.NewPublicHandler(publicSvc)
+	settingsHandler := handler.NewSettingsHandler(settingsSvc)
+	tagHandler := handler.NewTagHandler(tagSvc)
+	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionSvc)
 
 	NewServer := &Server{
-		port:             cfg.Port,
-		db:               db,
-		authHandler:      authHandler,
-		userHandler:      userHandler,
-		contactHandler:   contactHandler,
-		templateHandler:  templateHandler,
-		campaignHandler:  campaignHandler,
-		analyticsHandler: analyticsHandler,
-		searchHandler:    searchHandler,
-		publicHandler:    publicHandler,
+		port:                cfg.Port,
+		db:                  db,
+		authHandler:         authHandler,
+		userHandler:         userHandler,
+		contactHandler:      contactHandler,
+		templateHandler:     templateHandler,
+		campaignHandler:     campaignHandler,
+		analyticsHandler:    analyticsHandler,
+		searchHandler:       searchHandler,
+		publicHandler:       publicHandler,
+		settingsHandler:     settingsHandler,
+		tagHandler:          tagHandler,
+		subscriptionHandler: subscriptionHandler,
 	}
 
 	server := &http.Server{
@@ -133,6 +148,22 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Public Routes
 	mux.HandleFunc("POST /api/v1/public/unsubscribe", s.publicHandler.Unsubscribe)
+
+	// Settings Routes
+	mux.Handle("GET /api/v1/settings", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.GetSettings)))
+	mux.Handle("PUT /api/v1/settings", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdateSettings)))
+	mux.Handle("PUT /api/v1/settings/smtp", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdateSMTP)))
+	mux.Handle("POST /api/v1/settings/smtp/test", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.TestSMTP)))
+
+	// Tag Routes
+	mux.Handle("GET /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.ListTags)))
+	mux.Handle("POST /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.CreateTag)))
+	mux.Handle("PUT /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.UpdateTag)))
+	mux.Handle("DELETE /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.DeleteTag)))
+
+	// Subscription Routes
+	mux.Handle("GET /api/v1/subscriptions", middleware.AuthMiddleware(http.HandlerFunc(s.subscriptionHandler.GetSubscription)))
+	mux.Handle("POST /api/v1/subscriptions", middleware.AuthMiddleware(http.HandlerFunc(s.subscriptionHandler.CreateSubscription)))
 
 	return mux
 }

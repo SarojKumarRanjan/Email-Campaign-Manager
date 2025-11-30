@@ -149,5 +149,9 @@
         "resubscribe": "/api/v1/public/resubscribe/:token",
         "update_preferences": "/api/v1/public/preferences/:token",
         "track_pixel": "/api/v1/public/pixel/:trackingId.png"
+    },
+    "subscriptions": {
+        "get_subscription": "/api/v1/subscriptions",
+        "create_subscription": "/api/v1/subscriptions"
     }
 }

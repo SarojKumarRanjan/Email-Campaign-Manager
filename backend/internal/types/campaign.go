@@ -25,7 +25,7 @@ type CampaignDTO struct {
 	UnsubscribedCount int          `json:"unsubscribed_count"`
 	CreatedAt         time.Time    `json:"created_at"`
 	UpdatedAt         time.Time    `json:"updated_at"`
-	Tags              []TagDTO     `json:"tags,omitempty"`
+	Tags              []Tag        `json:"tags,omitempty"`
 	Template          *TemplateDTO `json:"template,omitempty"`
 }
 

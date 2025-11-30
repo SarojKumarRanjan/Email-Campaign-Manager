@@ -20,7 +20,7 @@ type ContactDTO struct {
 	CreatedAt       time.Time       `json:"created_at"`
 	UpdatedAt       time.Time       `json:"updated_at"`
 	LastContactedAt *time.Time      `json:"last_contacted_at"`
-	Tags            []TagDTO        `json:"tags,omitempty"`
+	Tags            []Tag           `json:"tags,omitempty"`
 }
 
 type CreateContactRequest struct {
