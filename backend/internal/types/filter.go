@@ -10,6 +10,8 @@ type ContactFilter struct {
 	Search       string   `json:"search" form:"search"`
 	Page         int      `json:"page" form:"page"`
 	Limit        int      `json:"limit" form:"limit"`
+	SortBy       string   `json:"sort_by" form:"sort_by"`
+	SortOrder    string   `json:"sort_order" form:"sort_order"`
 }
 
 type CampaignFilter struct {

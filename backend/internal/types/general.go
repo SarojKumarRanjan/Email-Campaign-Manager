@@ -26,9 +26,10 @@ type UpdatePreferencesRequest struct {
 
 type PaginationRequest struct {
 	Page      int    `json:"page" form:"page"`
-	PageSize  int    `json:"page_size" form:"page_size"`
+	Limit     int    `json:"limit" form:"limit"`
 	SortBy    string `json:"sort_by" form:"sort_by"`
 	SortOrder string `json:"sort_order" form:"sort_order"`
+	Search    string `json:"search" form:"search"`
 }
 
 type PaginatedResponse struct {
