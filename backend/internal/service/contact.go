@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"email_campaign/internal/repository"
 	"email_campaign/internal/types"
 )
@@ -8,7 +9,7 @@ import (
 type ContactService interface {
 	CreateContact(req *types.CreateContactRequest) error
 	GetContact(id uint64) (*types.ContactDTO, error)
-	ListContacts(filter *types.ContactFilter) ([]types.ContactDTO, error)
+	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error)
 }
 
 type contactService struct {
@@ -27,6 +28,6 @@ func (s *contactService) GetContact(id uint64) (*types.ContactDTO, error) {
 	return s.repo.GetContact(id)
 }
 
-func (s *contactService) ListContacts(filter *types.ContactFilter) ([]types.ContactDTO, error) {
-	return s.repo.ListContacts(filter)
+func (s *contactService) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error) {
+	return s.repo.ListContacts(ctx, filter)
 }
