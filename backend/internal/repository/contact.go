@@ -13,7 +13,7 @@ import (
 
 type ContactRepository interface {
 	CreateContact(contact *types.CreateContactRequest) error
-	GetContact(id uint64) (*types.ContactDTO, error)
+	GetContact(id uint64, userId uint64) (*types.ContactDTO, error)
 	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error)
 }
 
@@ -30,9 +30,24 @@ func (r *contactRepository) CreateContact(contact *types.CreateContactRequest) e
 	return nil
 }
 
-func (r *contactRepository) GetContact(id uint64) (*types.ContactDTO, error) {
-	// TODO: Implement
-	return nil, nil
+func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.ContactDTO, error) {
+
+	baseQuery := `SELECT id, user_id, email, first_name, last_name, phone, company, is_subscribed, is_bounced, bounce_count, custom_fields, created_at, updated_at, last_contacted_at FROM contacts WHERE id = ? AND user_id = ?`
+	//get tags as well
+
+	args := []interface{}{id, userId, id}
+
+	row := r.db.QueryRow(baseQuery, args...)
+	var contact types.ContactDTO
+	if err := row.Scan(
+		&contact.ID, &contact.UserID, &contact.Email, &contact.FirstName, &contact.LastName,
+		&contact.Phone, &contact.Company, &contact.IsSubscribed, &contact.IsBounced,
+		&contact.BounceCount, &contact.CustomFields, &contact.CreatedAt, &contact.UpdatedAt,
+		&contact.LastContactedAt,
+	); err != nil {
+		return nil, err
+	}
+	return &contact, nil
 }
 
 func (r *contactRepository) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error) {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"email_campaign/internal/middleware"
 	"email_campaign/internal/service"
@@ -33,10 +34,21 @@ func (h *ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
-	// TODO: Parse ID from URL
-	id := uint64(1) // Placeholder
+	var contactId uint64
+	var userId uint64
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Contact ID is required")
+		return
+	}
+	contactId, _ = strconv.ParseUint(id, 10, 64)
 
-	contact, err := h.svc.GetContact(id)
+	userId, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	contact, err := h.svc.GetContact(contactId, userId)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
 		return

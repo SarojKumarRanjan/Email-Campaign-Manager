@@ -133,6 +133,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Contact Routes
 	mux.Handle("GET /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ListContacts)))
+	mux.Handle("GET /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContact)))
+	mux.Handle("POST /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.CreateContact)))
 
 	// Template Routes
 	mux.Handle("GET /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.ListTemplates)))

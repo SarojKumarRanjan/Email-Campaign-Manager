@@ -8,7 +8,7 @@ import (
 
 type ContactService interface {
 	CreateContact(req *types.CreateContactRequest) error
-	GetContact(id uint64) (*types.ContactDTO, error)
+	GetContact(id uint64, userId uint64) (*types.ContactDTO, error)
 	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error)
 }
 
@@ -24,8 +24,8 @@ func (s *contactService) CreateContact(req *types.CreateContactRequest) error {
 	return s.repo.CreateContact(req)
 }
 
-func (s *contactService) GetContact(id uint64) (*types.ContactDTO, error) {
-	return s.repo.GetContact(id)
+func (s *contactService) GetContact(id uint64, userId uint64) (*types.ContactDTO, error) {
+	return s.repo.GetContact(id, userId)
 }
 
 func (s *contactService) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error) {
