@@ -153,7 +153,19 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("GET /api/v1/contacts/export", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ExportContacts)))
 
 	// Template Routes
+	// Template Routes
 	mux.Handle("GET /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.ListTemplates)))
+	mux.Handle("POST /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.CreateTemplate)))
+	mux.Handle("GET /api/v1/templates/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.GetTemplate)))
+	mux.Handle("PUT /api/v1/templates/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.UpdateTemplate)))
+	mux.Handle("DELETE /api/v1/templates/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.DeleteTemplate)))
+	mux.Handle("POST /api/v1/templates/{id}/duplicate", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.DuplicateTemplate)))
+	mux.Handle("POST /api/v1/templates/{id}/set-default", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.SetDefaultTemplate)))
+	mux.Handle("POST /api/v1/templates/{id}/preview", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.PreviewTemplate)))
+	mux.Handle("POST /api/v1/templates/upload/image", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.UploadTemplateImage)))
+
+	// Static Files (Uploads)
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	// Campaign Routes
 	mux.Handle("GET /api/v1/campaigns", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ListCampaigns)))

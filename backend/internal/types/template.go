@@ -16,6 +16,7 @@ type TemplateDTO struct {
 }
 
 type CreateTemplateRequest struct {
+	UserID      uint64 `json:"-"`
 	Name        string `json:"name" binding:"required"`
 	Subject     string `json:"subject" binding:"required"`
 	HTMLContent string `json:"html_content" binding:"required"`
@@ -24,6 +25,7 @@ type CreateTemplateRequest struct {
 }
 
 type UpdateTemplateRequest struct {
+	UserID      uint64
 	Name        string `json:"name"`
 	Subject     string `json:"subject"`
 	HTMLContent string `json:"html_content"`

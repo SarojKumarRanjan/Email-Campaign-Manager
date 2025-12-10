@@ -25,6 +25,7 @@ type CampaignFilter struct {
 }
 
 type TemplateFilter struct {
+	UserID    uint64 `json:"-"`
 	IsDefault *bool  `json:"is_default" form:"is_default"`
 	Search    string `json:"search" form:"search"`
 	Page      int    `json:"page" form:"page"`
