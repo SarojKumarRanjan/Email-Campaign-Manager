@@ -26,8 +26,55 @@ func NewContactRepository(db *sql.DB) ContactRepository {
 }
 
 func (r *contactRepository) CreateContact(contact *types.CreateContactRequest) error {
-	// TODO: Implement
-	return nil
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Check if contact already exists
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM contacts WHERE user_id = ? AND email = ?)`
+	err = tx.QueryRow(checkQuery, contact.UserID, contact.Email).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("contact already exists")
+	}
+
+	// Insert contact
+	query := `INSERT INTO contacts (user_id, email, first_name, last_name, phone, company, is_subscribed, custom_fields, created_at, updated_at) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
+
+	res, err := tx.Exec(query, contact.UserID, contact.Email, contact.FirstName, contact.LastName, contact.Phone, contact.Company, contact.IsSubscribed, contact.CustomFields)
+	if err != nil {
+		return err
+	}
+
+	contactID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	// Insert tags
+	if len(contact.TagIDs) > 0 {
+		tagQuery := `INSERT INTO contact_tags (contact_id, tag_id) VALUES (?, ?)`
+		stmt, err := tx.Prepare(tagQuery)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+
+		for _, tagID := range contact.TagIDs {
+			_, err = stmt.Exec(contactID, tagID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.ContactDTO, error) {

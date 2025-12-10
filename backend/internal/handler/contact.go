@@ -25,7 +25,18 @@ func (h *ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	req.UserID = userID
+
 	if err := h.svc.CreateContact(&req); err != nil {
+		if err.Error() == "contact already exists" {
+			utils.ErrorResponse(w, http.StatusConflict, err.Error())
+			return
+		}
 		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}

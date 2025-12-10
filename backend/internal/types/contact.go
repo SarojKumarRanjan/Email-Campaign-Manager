@@ -24,6 +24,7 @@ type ContactDTO struct {
 }
 
 type CreateContactRequest struct {
+	UserID       uint64          `json:"-"`
 	Email        string          `json:"email" binding:"required,email"`
 	FirstName    string          `json:"first_name"`
 	LastName     string          `json:"last_name"`
