@@ -6,6 +6,8 @@ import (
 
 type PublicRepository interface {
 	Unsubscribe(token string) error
+	Resubscribe(token string) error
+	UpdatePreferences(token string, isSubscribed bool) error
 }
 
 type publicRepository struct {
@@ -17,6 +19,16 @@ func NewPublicRepository(db *sql.DB) PublicRepository {
 }
 
 func (r *publicRepository) Unsubscribe(token string) error {
+	// TODO: Implement
+	return nil
+}
+
+func (r *publicRepository) Resubscribe(token string) error {
+	// TODO: Implement
+	return nil
+}
+
+func (r *publicRepository) UpdatePreferences(token string, isSubscribed bool) error {
 	// TODO: Implement
 	return nil
 }

@@ -2,6 +2,19 @@ package types
 
 import "time"
 
+type ActivityDTO struct {
+	ID   string
+	Type string
+}
+type TimelinePoint struct {
+	Date  string
+	Count int
+}
+
+type VolumePoint struct{}
+type TrendPoint struct{}
+type QuickStatsDTO struct{}
+
 type DashboardStatsDTO struct {
 	TotalCampaigns      int     `json:"total_campaigns"`
 	ActiveCampaigns     int     `json:"active_campaigns"`
@@ -10,6 +23,9 @@ type DashboardStatsDTO struct {
 	TotalEmailsSent     int     `json:"total_emails_sent"`
 	EmailsSentToday     int     `json:"emails_sent_today"`
 	EmailsSentThisMonth int     `json:"emails_sent_this_month"`
+	TotalDelivered      int     `json:"total_delivered"`
+	TotalOpened         int     `json:"total_opened"`
+	TotalClicked        int     `json:"total_clicked"`
 	AverageOpenRate     float64 `json:"average_open_rate"`
 	AverageClickRate    float64 `json:"average_click_rate"`
 	AverageBounceRate   float64 `json:"average_bounce_rate"`

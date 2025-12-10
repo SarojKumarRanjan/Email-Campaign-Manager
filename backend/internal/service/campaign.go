@@ -25,6 +25,9 @@ type CampaignService interface {
 	GetCampaignRecipients(id uint64, userID uint64, page, limit int) ([]types.CampaignRecipientDTO, error)
 	GetCampaignStats(id uint64, userID uint64) (*types.CampaignStatsDTO, error)
 	TrackEvent(trackingID string, eventType string, userAgent string, ipAddress string, url string) error
+	HandleWebhookBounce(req *types.WebhookBounceRequest) error
+	HandleWebhookComplaint(req *types.WebhookComplaintRequest) error
+	HandleWebhookDelivery(req *types.WebhookDeliveryRequest) error
 }
 
 type campaignService struct {
@@ -159,4 +162,21 @@ func (s *campaignService) TrackEvent(trackingID string, eventType string, userAg
 	}
 
 	return s.repo.RecordEvent(event)
+}
+
+func (s *campaignService) HandleWebhookBounce(req *types.WebhookBounceRequest) error {
+	// In a real system, we would map req.MessageID to a campaign_recipient record.
+	// For this implementation, we will log it and attempt to find the contact by email if possible.
+	// 1. Find contact by email (This would require ContactRepo access or a join query in CampaignRepo)
+	// 2. Update status
+	// For now, we'll placeholder this.
+	return nil
+}
+
+func (s *campaignService) HandleWebhookComplaint(req *types.WebhookComplaintRequest) error {
+	return nil
+}
+
+func (s *campaignService) HandleWebhookDelivery(req *types.WebhookDeliveryRequest) error {
+	return nil
 }

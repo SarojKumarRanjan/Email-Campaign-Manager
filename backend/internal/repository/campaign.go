@@ -15,6 +15,7 @@ type CampaignRepository interface {
 	UpdateStatus(id uint64, userID uint64, status string) error
 	GetCampaignRecipients(id uint64, userID uint64, page, limit int) ([]types.CampaignRecipientDTO, error)
 	RecordEvent(event *types.EmailEventDTO) error
+	UpdateRecipientStatus(campaignID, contactID uint64, status string, errorMessage string, bounceType string) error
 }
 
 type campaignRepository struct {
@@ -365,4 +366,17 @@ func (r *campaignRepository) RecordEvent(event *types.EmailEventDTO) error {
 	}
 
 	return tx.Commit()
+}
+
+func (r *campaignRepository) UpdateRecipientStatus(campaignID, contactID uint64, status string, errorMessage string, bounceType string) error {
+	query := `UPDATE campaign_recipients 
+              SET status = ?, error_message = ?, bounce_type = ?, updated_at = NOW() 
+              WHERE campaign_id = ? AND contact_id = ?`
+
+	_, err := r.db.Exec(query, status, errorMessage, bounceType, campaignID, contactID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

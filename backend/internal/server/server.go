@@ -31,6 +31,8 @@ type Server struct {
 	settingsHandler     *handler.SettingsHandler
 	tagHandler          *handler.TagHandler
 	subscriptionHandler *handler.SubscriptionHandler
+	retryQueueHandler   *handler.RetryQueueHandler
+	reportHandler       *handler.ReportHandler
 }
 
 func NewServer(cfg *config.Config, db database.Service) *http.Server {
@@ -52,6 +54,8 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	settingsRepo := repository.NewSettingsRepository(sqlDB)
 	tagRepo := repository.NewTagRepository(sqlDB)
 	subscriptionRepo := repository.NewSubscriptionRepository(sqlDB)
+	retryQueueRepo := repository.NewRetryQueueRepository(sqlDB)
+	reportRepo := repository.NewReportRepository(sqlDB)
 
 	// Services
 	authSvc := service.NewAuthService(authRepo, userRepo)
@@ -65,6 +69,8 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	settingsSvc := service.NewSettingsService(settingsRepo)
 	tagSvc := service.NewTagService(tagRepo)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo)
+	retryQueueSvc := service.NewRetryQueueService(retryQueueRepo)
+	reportSvc := service.NewReportService(reportRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authSvc)
@@ -78,6 +84,8 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	settingsHandler := handler.NewSettingsHandler(settingsSvc)
 	tagHandler := handler.NewTagHandler(tagSvc)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionSvc)
+	retryQueueHandler := handler.NewRetryQueueHandler(retryQueueSvc)
+	reportHandler := handler.NewReportHandler(reportSvc)
 
 	NewServer := &Server{
 		port:                cfg.Port,
@@ -93,6 +101,8 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 		settingsHandler:     settingsHandler,
 		tagHandler:          tagHandler,
 		subscriptionHandler: subscriptionHandler,
+		retryQueueHandler:   retryQueueHandler,
+		reportHandler:       reportHandler,
 	}
 
 	server := &http.Server{
@@ -132,7 +142,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("POST /api/v1/users/me/password", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.ChangePassword)))
 
 	// Contact Routes
-	// Contact Routes
 	mux.Handle("GET /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ListContacts)))
 	mux.Handle("GET /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContact)))
 	mux.Handle("POST /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.CreateContact)))
@@ -152,7 +161,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("POST /api/v1/contacts/import", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ImportContacts)))
 	mux.Handle("GET /api/v1/contacts/export", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ExportContacts)))
 
-	// Template Routes
 	// Template Routes
 	mux.Handle("GET /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.ListTemplates)))
 	mux.Handle("POST /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.CreateTemplate)))
@@ -186,14 +194,36 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("GET /api/v1/track/open/{id}", http.HandlerFunc(s.campaignHandler.TrackOpen))
 	mux.Handle("GET /api/v1/track/click/{id}", http.HandlerFunc(s.campaignHandler.TrackClick))
 
-	// Analytics Routes
+	// Webhook Routes (Public)
+	mux.Handle("POST /api/v1/webhooks/bounce", http.HandlerFunc(s.campaignHandler.WebhookBounce))
+	mux.Handle("POST /api/v1/webhooks/complaint", http.HandlerFunc(s.campaignHandler.WebhookComplaint))
+	mux.Handle("POST /api/v1/webhooks/delivery", http.HandlerFunc(s.campaignHandler.WebhookDelivery))
+
+	// Analytics Routes (Detailed)
 	mux.Handle("GET /api/v1/analytics/dashboard", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetDashboardStats)))
+	mux.Handle("GET /api/v1/analytics/campaigns/{id}/timeline", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetCampaignTimeline)))
+	mux.Handle("POST /api/v1/analytics/campaigns/compare", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetCampaignComparison)))
+	mux.Handle("GET /api/v1/analytics/contacts/{id}/engagement", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetContactEngagement)))
+	mux.Handle("GET /api/v1/analytics/tags/{id}/performance", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetTagPerformance)))
+	mux.Handle("GET /api/v1/analytics/send-volume", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetSendVolume)))
+	mux.Handle("GET /api/v1/analytics/engagement-trends", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetEngagementTrends)))
+	mux.Handle("POST /api/v1/analytics/export", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.ExportAnalytics)))
+
+	// Dashboard Widgets
+	mux.Handle("GET /api/v1/dashboard/recent-campaigns", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetRecentCampaigns)))
+	mux.Handle("GET /api/v1/dashboard/activity", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetRecentActivity)))
+	mux.Handle("GET /api/v1/dashboard/quick-stats", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetQuickStats)))
 
 	// Search Routes
 	mux.Handle("GET /api/v1/search", middleware.AuthMiddleware(http.HandlerFunc(s.searchHandler.Search)))
+	mux.Handle("GET /api/v1/search/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.searchHandler.SearchContacts)))
+	mux.Handle("GET /api/v1/search/campaigns", middleware.AuthMiddleware(http.HandlerFunc(s.searchHandler.SearchCampaigns)))
+	mux.Handle("GET /api/v1/search/templates", middleware.AuthMiddleware(http.HandlerFunc(s.searchHandler.SearchTemplates)))
 
 	// Public Routes
 	mux.HandleFunc("POST /api/v1/public/unsubscribe", s.publicHandler.Unsubscribe)
+	mux.HandleFunc("POST /api/v1/public/resubscribe/{token}", s.publicHandler.Resubscribe)
+	mux.HandleFunc("POST /api/v1/public/preferences", s.publicHandler.UpdatePreferences)
 
 	// Settings Routes
 	mux.Handle("GET /api/v1/settings", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.GetSettings)))
@@ -206,10 +236,38 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("POST /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.CreateTag)))
 	mux.Handle("PUT /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.UpdateTag)))
 	mux.Handle("DELETE /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.DeleteTag)))
+	mux.Handle("GET /api/v1/tags/{id}/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetTagContacts)))
+	mux.Handle("POST /api/v1/tags/{id}/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.AddContactToTag)))
+	mux.Handle("POST /api/v1/tags/{id}/contacts/remove", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.RemoveContactsFromTag)))
+
+	// Campaign Tag Routes
+	mux.Handle("GET /api/v1/campaigns/{id}/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetCampaignTags)))
+	mux.Handle("POST /api/v1/campaigns/{id}/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.AddTagToCampaign)))
+	mux.Handle("DELETE /api/v1/campaigns/{id}/tags/{tagId}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.RemoveTagFromCampaign)))
+
+	// Contact Tags Routes (added here or under Contact Routes section)
+	mux.Handle("GET /api/v1/contacts/{id}/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetContactTags)))
+
+	// Campaign Events & Recipient Actions
+	mux.Handle("GET /api/v1/campaigns/{id}/events", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ListEvents)))
+	mux.Handle("GET /api/v1/campaigns/{id}/recipients/failed", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.GetFailedRecipients)))
+	mux.Handle("POST /api/v1/campaigns/{campaignId}/recipients/{id}/retry", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.RetryFailedRecipient)))
 
 	// Subscription Routes
 	mux.Handle("GET /api/v1/subscriptions", middleware.AuthMiddleware(http.HandlerFunc(s.subscriptionHandler.GetSubscription)))
 	mux.Handle("POST /api/v1/subscriptions", middleware.AuthMiddleware(http.HandlerFunc(s.subscriptionHandler.CreateSubscription)))
+
+	// Retry Queue Routes
+	mux.Handle("GET /api/v1/retry-queue", middleware.AuthMiddleware(http.HandlerFunc(s.retryQueueHandler.ListRetryItems)))
+	mux.Handle("GET /api/v1/retry-queue/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.retryQueueHandler.GetRetryItem)))
+	mux.Handle("POST /api/v1/retry-queue/process", middleware.AuthMiddleware(http.HandlerFunc(s.retryQueueHandler.ProcessRetryQueue)))
+	mux.Handle("DELETE /api/v1/retry-queue/clear", middleware.AuthMiddleware(http.HandlerFunc(s.retryQueueHandler.ClearRetryQueue)))
+
+	// Report Routes
+	mux.Handle("GET /api/v1/reports", middleware.AuthMiddleware(http.HandlerFunc(s.reportHandler.ListReports)))
+	mux.Handle("POST /api/v1/reports/generate", middleware.AuthMiddleware(http.HandlerFunc(s.reportHandler.GenerateReport)))
+	mux.Handle("POST /api/v1/reports/campaign/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.reportHandler.GenerateReport)))
+	mux.Handle("GET /api/v1/reports/{id}/download", middleware.AuthMiddleware(http.HandlerFunc(s.reportHandler.DownloadReport)))
 
 	return mux
 }

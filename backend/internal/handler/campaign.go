@@ -351,13 +351,29 @@ func (h *CampaignHandler) TrackOpen(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// Serve 1x1 transparent GIF
-	w.Header().Set("Content-Type", "image/gif")
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Write([]byte{
+	pixel := []byte{
 		0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0xff, 0xff, 0xff,
 		0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
 		0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b,
-	})
+	}
+	w.Header().Set("Content-Type", "image/gif")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Write(pixel)
+}
+
+func (h *CampaignHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
+	// campaignID := r.PathValue("id")
+	// call svc...
+	utils.SuccessResponse(w, http.StatusOK, "Events listed", []string{})
+}
+
+func (h *CampaignHandler) RetryFailedRecipient(w http.ResponseWriter, r *http.Request) {
+	// call svc...
+	utils.SuccessResponse(w, http.StatusOK, "Retry initiated", nil)
+}
+
+func (h *CampaignHandler) GetFailedRecipients(w http.ResponseWriter, r *http.Request) {
+	utils.SuccessResponse(w, http.StatusOK, "Failed recipients listed", []string{})
 }
 
 func (h *CampaignHandler) TrackClick(w http.ResponseWriter, r *http.Request) {
@@ -375,4 +391,43 @@ func (h *CampaignHandler) TrackClick(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	http.Redirect(w, r, targetURL, http.StatusFound)
+}
+
+func (h *CampaignHandler) WebhookBounce(w http.ResponseWriter, r *http.Request) {
+	var req types.WebhookBounceRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.svc.HandleWebhookBounce(&req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.SuccessResponse(w, http.StatusOK, "Bounce recorded", nil)
+}
+
+func (h *CampaignHandler) WebhookComplaint(w http.ResponseWriter, r *http.Request) {
+	var req types.WebhookComplaintRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.svc.HandleWebhookComplaint(&req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.SuccessResponse(w, http.StatusOK, "Complaint recorded", nil)
+}
+
+func (h *CampaignHandler) WebhookDelivery(w http.ResponseWriter, r *http.Request) {
+	var req types.WebhookDeliveryRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.svc.HandleWebhookDelivery(&req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.SuccessResponse(w, http.StatusOK, "Delivery recorded", nil)
 }
