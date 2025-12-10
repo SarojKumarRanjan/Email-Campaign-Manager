@@ -1,19 +1,17 @@
 package types
 
 import (
-	"encoding/json"
 	"time"
 )
 
 type EmailEventDTO struct {
-	ID                  uint64          `json:"id"`
-	CampaignRecipientID uint64          `json:"campaign_recipient_id"`
-	EventType           string          `json:"event_type"`
-	EventData           json.RawMessage `json:"event_data"`
-	IPAddress           string          `json:"ip_address"`
-	UserAgent           string          `json:"user_agent"`
-	ClickedURL          string          `json:"clicked_url"`
-	CreatedAt           time.Time       `json:"created_at"`
+	CampaignID uint64    `json:"campaign_id"`
+	ContactID  uint64    `json:"contact_id"`
+	EventType  string    `json:"event_type"`
+	EventAt    time.Time `json:"event_at"`
+	UserAgent  string    `json:"user_agent"`
+	IPAddress  string    `json:"ip_address"`
+	Url        string    `json:"url,omitempty"`
 }
 
 type WebhookBounceRequest struct {

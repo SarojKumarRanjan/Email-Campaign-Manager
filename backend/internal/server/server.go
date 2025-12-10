@@ -169,6 +169,22 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Campaign Routes
 	mux.Handle("GET /api/v1/campaigns", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ListCampaigns)))
+	mux.Handle("POST /api/v1/campaigns", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.CreateCampaign)))
+	mux.Handle("GET /api/v1/campaigns/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.GetCampaign)))
+	mux.Handle("PUT /api/v1/campaigns/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.UpdateCampaign)))
+	mux.Handle("DELETE /api/v1/campaigns/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.DeleteCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/duplicate", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.DuplicateCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/schedule", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ScheduleCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/send", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.SendCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/pause", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.PauseCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/resume", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ResumeCampaign)))
+	mux.Handle("POST /api/v1/campaigns/{id}/cancel", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.CancelCampaign)))
+	mux.Handle("GET /api/v1/campaigns/{id}/recipients", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.GetCampaignRecipients)))
+	mux.Handle("GET /api/v1/campaigns/{id}/stats", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.GetCampaignStats)))
+
+	// Public Tracking Routes
+	mux.Handle("GET /api/v1/track/open/{id}", http.HandlerFunc(s.campaignHandler.TrackOpen))
+	mux.Handle("GET /api/v1/track/click/{id}", http.HandlerFunc(s.campaignHandler.TrackClick))
 
 	// Analytics Routes
 	mux.Handle("GET /api/v1/analytics/dashboard", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetDashboardStats)))

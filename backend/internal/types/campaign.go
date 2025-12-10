@@ -29,7 +29,17 @@ type CampaignDTO struct {
 	Template          *TemplateDTO `json:"template,omitempty"`
 }
 
+const (
+	CampaignStatusDraft     = "draft"
+	CampaignStatusScheduled = "scheduled"
+	CampaignStatusSending   = "sending"
+	CampaignStatusPaused    = "paused"
+	CampaignStatusCompleted = "completed"
+	CampaignStatusCancelled = "cancelled"
+)
+
 type CreateCampaignRequest struct {
+	UserID       uint64     `json:"-"`
 	Name         string     `json:"name" binding:"required"`
 	Subject      string     `json:"subject" binding:"required"`
 	FromName     string     `json:"from_name" binding:"required"`
@@ -43,6 +53,7 @@ type CreateCampaignRequest struct {
 }
 
 type UpdateCampaignRequest struct {
+	UserID       uint64
 	Name         string     `json:"name"`
 	Subject      string     `json:"subject"`
 	FromName     string     `json:"from_name"`

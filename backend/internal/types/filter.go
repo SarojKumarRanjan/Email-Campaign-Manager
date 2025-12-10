@@ -15,6 +15,7 @@ type ContactFilter struct {
 }
 
 type CampaignFilter struct {
+	UserID    uint64     `json:"-"`
 	Status    []string   `json:"status" form:"status"`
 	TagIDs    []uint64   `json:"tag_ids" form:"tag_ids"`
 	StartDate *time.Time `json:"start_date" form:"start_date"`
