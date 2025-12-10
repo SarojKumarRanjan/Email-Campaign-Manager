@@ -132,9 +132,25 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("POST /api/v1/users/me/password", middleware.AuthMiddleware(http.HandlerFunc(s.userHandler.ChangePassword)))
 
 	// Contact Routes
+	// Contact Routes
 	mux.Handle("GET /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ListContacts)))
 	mux.Handle("GET /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContact)))
 	mux.Handle("POST /api/v1/contacts", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.CreateContact)))
+	mux.Handle("PUT /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.UpdateContact)))
+	mux.Handle("DELETE /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.DeleteContact)))
+	mux.Handle("GET /api/v1/contacts/email/{email}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContactByEmail)))
+	mux.Handle("GET /api/v1/contacts/{id}/activity", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContactActivity)))
+	mux.Handle("POST /api/v1/contacts/{id}/subscribe", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.SubscribeContact)))
+	mux.Handle("POST /api/v1/contacts/{id}/unsubscribe", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.UnsubscribeContact)))
+
+	// Bulk Operations
+	mux.Handle("POST /api/v1/contacts/bulk", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.BulkCreateContacts)))
+	mux.Handle("PUT /api/v1/contacts/bulk/update", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.BulkUpdateContacts)))
+	mux.Handle("POST /api/v1/contacts/bulk/delete", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.BulkDeleteContacts)))
+
+	// Import/Export
+	mux.Handle("POST /api/v1/contacts/import", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ImportContacts)))
+	mux.Handle("GET /api/v1/contacts/export", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.ExportContacts)))
 
 	// Template Routes
 	mux.Handle("GET /api/v1/templates", middleware.AuthMiddleware(http.HandlerFunc(s.templateHandler.ListTemplates)))

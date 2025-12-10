@@ -43,6 +43,7 @@ type UpdateContactRequest struct {
 	Company      string          `json:"company"`
 	IsSubscribed *bool           `json:"is_subscribed"`
 	CustomFields json.RawMessage `json:"custom_fields"`
+	TagIDs       []uint64        `json:"tag_ids"`
 }
 
 type BulkCreateContactsRequest struct {
