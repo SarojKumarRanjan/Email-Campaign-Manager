@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 type urlConfig = {
     template: string;
-    variables: [string];
+    variables?: [string];
 }
 
 interface FetchConfig {
@@ -98,18 +98,17 @@ export function useFetch<TData = any, TError = any>(
  *   params: { notify: true } 
  * });
  */
-export function useConfigurableMutation<
-    TData = any,
+export function useConfigurableMutation<TData = any,
     TError = any,
-    TVariables extends Partial<FetchConfig> = Partial<FetchConfig>
+    TVariables extends FetchConfig = FetchConfig
 >(
     axiosReqPromise: (url: string, data?: any, config?: AxiosRequestConfig) => Promise<AxiosResponse<TData>>,
-    baseConfig: FetchConfig,
-    options?: UseConfigurableMutationOptions<TData, TError, TVariables> & {
+    options?: {
         onSuccess?: (data: TData, variables: TVariables, context: any) => void;
         onError?: (error: TError, variables: TVariables, context: any) => void;
-        onSettled?: (data: TData | undefined, variables: TVariables, context: any) => void;
-    }
+        onMutate?: (variables: TVariables) => Promise<any> | any;
+        onSettled?: (data: TData | undefined, error: TError | null, variables: TVariables, context: any) => void;
+    } & Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onSuccess' | 'onError' | 'onMutate' | 'onSettled'>
 ) {
     const {
         onSuccess,
@@ -122,12 +121,12 @@ export function useConfigurableMutation<
     const mutationResult = useMutation<TData, TError, TVariables>({
         mutationFn: async (variables: TVariables) => {
             const {
-                url = baseConfig.url,
-                params = baseConfig.params,
-                data = baseConfig.data,
-                headers = baseConfig.headers,
+                url,
+                params,
+                data,
+                headers,
                 ...restConfig
-            } = { ...baseConfig, ...variables };
+            } = variables;
 
             const axiosConfig: AxiosRequestConfig = {
                 params,
@@ -135,29 +134,30 @@ export function useConfigurableMutation<
                 ...restConfig,
             };
 
-            const response = await axiosReqPromise(buildUrl(url.template, url.variables), data, axiosConfig);
+            const response = await axiosReqPromise(
+                buildUrl(url.template, url.variables),
+                data,
+                axiosConfig
+            );
             return response.data;
         },
         ...restOptions,
+        onMutate: onMutate ? async (variables) => {
+            return await onMutate(variables);
+        } : undefined,
         onSuccess: (data, variables, context) => {
-            if (onSuccess) {
-                onSuccess(data, variables, context);
-            }
+            onSuccess?.(data, variables, context);
             //@ts-ignore
             toast.success(data?.message || "Success");
         },
         onError: (error, variables, context) => {
-            if (onError) {
-                onError(error, variables, context);
-            }
+            onError?.(error, variables, context);
             //@ts-ignore
             toast.error(error.response?.data?.message || "Something went wrong");
         },
-        // onSettled: (data, variables, context) => {
-        //   if (onSettled) {
-        //     onSettled(data , variables, context);
-        //   }
-        // },
+        onSettled: onSettled ? (data, error, variables, context) => {
+            onSettled(data, error, variables, context);
+        } : undefined,
     });
 
     return mutationResult;

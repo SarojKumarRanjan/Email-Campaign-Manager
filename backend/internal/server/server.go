@@ -148,7 +148,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("PUT /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.UpdateContact)))
 	mux.Handle("DELETE /api/v1/contacts/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.DeleteContact)))
 	mux.Handle("GET /api/v1/contacts/email/{email}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContactByEmail)))
-	mux.Handle("GET /api/v1/contacts/{id}/activity", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContactActivity)))
+	mux.Handle("GET /api/v1/contacts/activity/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.GetContactActivity)))
 	mux.Handle("POST /api/v1/contacts/{id}/subscribe", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.SubscribeContact)))
 	mux.Handle("POST /api/v1/contacts/{id}/unsubscribe", middleware.AuthMiddleware(http.HandlerFunc(s.contactHandler.UnsubscribeContact)))
 
@@ -246,8 +246,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("DELETE /api/v1/campaigns/{id}/tags/{tagId}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.RemoveTagFromCampaign)))
 
 	// Contact Tags Routes (added here or under Contact Routes section)
-	mux.Handle("GET /api/v1/contacts/{id}/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetContactTags)))
-
+	/* mux.Handle("GET /api/v1/contacts/{id}/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetContactTags)))
+	 */
 	// Campaign Events & Recipient Actions
 	mux.Handle("GET /api/v1/campaigns/{id}/events", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.ListEvents)))
 	mux.Handle("GET /api/v1/campaigns/{id}/recipients/failed", middleware.AuthMiddleware(http.HandlerFunc(s.campaignHandler.GetFailedRecipients)))
