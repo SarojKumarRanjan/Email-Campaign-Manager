@@ -20,8 +20,8 @@ export default function MainLayout({
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
-            <SidebarInset className="max-h-[calc(100svh-2.25svh)] overflow-hidden">
+            <AppSidebar variant="sidebar" />
+            <SidebarInset >
                 <SiteHeader />
                 <ScrollArea className="h-[calc(100svh-var(--header-height))]">
                     {children}
@@ -30,3 +30,5 @@ export default function MainLayout({
         </SidebarProvider>
     )
 }
+
+//className="max-h-[calc(100svh-2.25svh)] overflow-hidden"
