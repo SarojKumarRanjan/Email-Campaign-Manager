@@ -1,5 +1,5 @@
 import { buildUrl } from '@/lib/utils';
-import { useQuery, useMutation, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
+import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 import type { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 
@@ -19,8 +19,6 @@ interface UseFetchOptions<TData = any, TError = any> extends Omit<UseQueryOption
     key?: string[];
 }
 
-interface UseConfigurableMutationOptions<TData = any, TError = any, TVariables = any>
-    extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn'> { }
 
 /**
  * useFetch - Custom hook for GET requests using TanStack Query
@@ -66,7 +64,13 @@ export function useFetch<TData = any, TError = any>(
             staleTime: 5 * 60 * 1000, // 5 minutes
             ...options,
         });
-        return queryResult;
+        return {
+            ...queryResult,
+            //@ts-ignore
+            data: queryResult?.data?.data,
+
+
+        };
     } catch (error) {
         //@ts-ignore
         toast.error(error.response?.data?.message || "Something went wrong");
@@ -103,6 +107,7 @@ export function useConfigurableMutation<TData = any,
     TVariables extends FetchConfig = FetchConfig
 >(
     axiosReqPromise: (url: string, data?: any, config?: AxiosRequestConfig) => Promise<AxiosResponse<TData>>,
+    queryKey: string[],
     options?: {
         onSuccess?: (data: TData, variables: TVariables, context: any) => void;
         onError?: (error: TError, variables: TVariables, context: any) => void;
@@ -117,6 +122,8 @@ export function useConfigurableMutation<TData = any,
         onMutate,
         ...restOptions
     } = options || {};
+
+    const queryClient = useQueryClient();
 
     const mutationResult = useMutation<TData, TError, TVariables>({
         mutationFn: async (variables: TVariables) => {
@@ -139,13 +146,25 @@ export function useConfigurableMutation<TData = any,
                 data,
                 axiosConfig
             );
-            return response.data;
+            return response?.data;
         },
         ...restOptions,
+
         onMutate: onMutate ? async (variables) => {
-            return await onMutate(variables);
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            return { variables, context: { signal } }
+
         } : undefined,
         onSuccess: (data, variables, context) => {
+            queryClient.invalidateQueries({ queryKey })
+            //@ts-ignore
+            if (data?.data) {
+                //@ts-ignore
+                data = data?.data
+            }
             onSuccess?.(data, variables, context);
             //@ts-ignore
             toast.success(data?.message || "Success");
@@ -160,5 +179,40 @@ export function useConfigurableMutation<TData = any,
         } : undefined,
     });
 
-    return mutationResult;
+    return { ...mutationResult };
 }
+
+
+/* export function useConfigurableMutation(mutationFunction:(variables: any) => Promise<any>,queryKey:string[],config:UseMutationOptions<any, any, any, any>){
+    const queryClient = useQueryClient();
+    const {onSuccess,onError,onMutate,onSettled,...restOptions} = config;
+
+    const mutation = useMutation({
+        mutationFn:mutationFunction,
+        ...restOptions,
+        onMutate: async(variables)=>{
+            const controller = new AbortController();
+            const signal  = controller.signal;
+
+            return {variables,context:{signal}}
+        },
+        onSuccess: async(data, variables, context) => {
+            await queryClient.invalidateQueries({queryKey});
+            onSuccess?.(data, variables, context);
+           
+            toast.success(data?.message || "Success");
+        },
+        onError: async(error, variables, context) => {
+            onError?.(error, variables, context);
+           
+            toast.error(error.response?.data?.message || "Something went wrong");
+        },
+        onSettled: onSettled ? () => {
+            onSettled();
+        } : undefined,
+    })
+    return {...mutation}; 
+}
+
+*/
+

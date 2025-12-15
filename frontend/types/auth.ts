@@ -22,3 +22,18 @@ export const otpSchema = z.object({
 })
 
 export type OTPFormValues = z.infer<typeof otpSchema>
+
+
+export interface User {
+    id: number,
+    email: string,
+    first_name: string,
+    last_name: string,
+    company_name: string,
+    is_active: boolean,
+    email_verified: boolean,
+    created_at: string,
+    updated_at: string,
+    last_login_at: string | null
+}
+

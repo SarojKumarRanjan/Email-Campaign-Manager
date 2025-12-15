@@ -5,6 +5,7 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
+import { AuthGuard } from "@/components/auth-guard"
 
 export default function MainLayout({
     children,
@@ -12,22 +13,24 @@ export default function MainLayout({
     children: React.ReactNode
 }) {
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="sidebar" />
-            <SidebarInset >
-                <SiteHeader />
-                <ScrollArea className="h-[calc(100svh-var(--header-height))]">
-                    {children}
-                </ScrollArea>
-            </SidebarInset>
-        </SidebarProvider>
+        <AuthGuard>
+            <SidebarProvider
+                style={
+                    {
+                        "--sidebar-width": "calc(var(--spacing) * 72)",
+                        "--header-height": "calc(var(--spacing) * 12)",
+                    } as React.CSSProperties
+                }
+            >
+                <AppSidebar variant="sidebar" />
+                <SidebarInset >
+                    <SiteHeader />
+                    <ScrollArea className="h-[calc(100svh-var(--header-height))]">
+                        {children}
+                    </ScrollArea>
+                </SidebarInset>
+            </SidebarProvider>
+        </AuthGuard>
     )
 }
 

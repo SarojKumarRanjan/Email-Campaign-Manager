@@ -7,6 +7,7 @@ import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
 import { OTPForm } from "@/components/otp-form"
 import { ModeToggle } from "./mode-toggle"
+import { useRouter } from "next/navigation"
 
 type OnboardingStep = "login" | "signup" | "otp"
 
@@ -17,6 +18,8 @@ interface OnboardingProps {
 export function Onboarding({ initialStep = "login" }: OnboardingProps) {
     const [step, setStep] = React.useState<OnboardingStep>(initialStep)
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
+
+    const router = useRouter()
 
     const imageCount = 7
 
@@ -31,10 +34,11 @@ export function Onboarding({ initialStep = "login" }: OnboardingProps) {
     const handleLoginClick = () => setStep("login")
     const handleSignupClick = () => setStep("signup")
     const handleSignupSuccess = () => setStep("otp")
+    const handleLoginSuccess = () => {
+        router.push("/dashboard")
+    }
     const handleOtpSuccess = () => {
-        // Navigate to dashboard or home, for now just log
-        console.log("OTP Verified")
-        // In a real app, this would redirect
+        router.push("/dashboard")
     }
 
     const currentImage = `/on${currentImageIndex + 1}.svg`
@@ -53,7 +57,7 @@ export function Onboarding({ initialStep = "login" }: OnboardingProps) {
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-sm">
                         {step === "login" && (
-                            <LoginForm onSignupClick={handleSignupClick} />
+                            <LoginForm onSignupClick={handleSignupClick} onLoginSuccess={handleLoginSuccess} />
                         )}
                         {step === "signup" && (
                             <SignupForm

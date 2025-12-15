@@ -11,13 +11,15 @@ import { postAxiosForUseFetch } from "@/lib/axios"
 import API_PATH from "@/lib/apiPath"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { loginSchema, type LoginFormValues } from "@/types/auth"
+import { loginSchema, type LoginFormValues, User } from "@/types/auth"
+import { useAuthStore } from "@/store/auth.store"
 
 export function LoginForm({
   className,
   onSignupClick,
+  onLoginSuccess,
   ...props
-}: React.ComponentProps<"form"> & { onSignupClick?: () => void }) {
+}: React.ComponentProps<"form"> & { onSignupClick?: () => void, onLoginSuccess?: () => void }) {
   const {
     register,
     handleSubmit,
@@ -30,19 +32,24 @@ export function LoginForm({
     },
   })
 
-  // Use the custom mutation hook
+  const setUser = useAuthStore((state) => state.setUser)
+
+
   const { mutate: loginMutation, isPending } = useConfigurableMutation(
     postAxiosForUseFetch,
+    ["login"],
     {
-      onSuccess: () => {
-        // Handle successful login (e.g., redirect or update auth state)
-        console.log("Login successful")
+      onSuccess: (data) => {
+        if (data?.user) {
+          setUser(data?.user as User)
+          localStorage.setItem("refresh_token", data.refresh_token)
+          onLoginSuccess?.()
+        }
       },
     }
   )
 
   const onSubmit = (data: LoginFormValues) => {
-    console.log(data)
     loginMutation({
       url: { template: API_PATH.AUTH.LOGIN },
       data,

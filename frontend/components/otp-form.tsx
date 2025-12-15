@@ -35,6 +35,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
   // Use the custom mutation hook
   const { mutate: verifyOtpMutation, isPending } = useConfigurableMutation(
     postAxiosForUseFetch,
+    ["verifyOtp"],
     {
       onSuccess: () => {
         console.log("OTP Verified")

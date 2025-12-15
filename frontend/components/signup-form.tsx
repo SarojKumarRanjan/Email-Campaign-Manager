@@ -37,6 +37,7 @@ export function SignupForm({
   // Use the custom mutation hook
   const { mutate: signupMutation, isPending } = useConfigurableMutation(
     postAxiosForUseFetch,
+    ["signup"],
     {
       onSuccess: () => {
         onSignupSuccess?.()

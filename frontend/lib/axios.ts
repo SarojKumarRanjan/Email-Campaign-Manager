@@ -1,7 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 
-console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
     timeout: 10000,
@@ -18,20 +17,24 @@ api.interceptors.response.use(
     }
 );
 
-const getAxiosForUseFetch = (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return api.get(url, { params, data, headers });
+const getAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
+    return await api.get(url, { params, data, headers });
 }
 
-const postAxiosForUseFetch = (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return api.post(url, { params, data, headers });
+const postAxiosForUseFetch = async (url: string, data?: any, config?: AxiosRequestConfig) => {
+    return await api.post(url, data, config);
 }
 
-const putAxiosForUseFetch = (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return api.put(url, { params, data, headers });
+const putAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, config?: AxiosRequestConfig) => {
+    return await api.put(url, { params, data }, config);
 }
 
-const deleteAxiosForUseFetch = (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return api.delete(url, { params, data, headers });
+const patchAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, config?: AxiosRequestConfig) => {
+    return await api.patch(url, { params, data }, config);
+}
+
+const deleteAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
+    return await api.delete(url, { params, data, headers });
 }
 
 export {
