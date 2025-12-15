@@ -40,9 +40,9 @@ export function LoginForm({
     ["login"],
     {
       onSuccess: (data) => {
+        console.log(data)
         if (data?.user) {
           setUser(data?.user as User)
-          localStorage.setItem("refresh_token", data.refresh_token)
           onLoginSuccess?.()
         }
       },

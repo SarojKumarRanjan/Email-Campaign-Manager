@@ -48,7 +48,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 setUser(user as User)
                 setIsChecking(false)
             } catch (error) {
-                router.push("/login")
+                router.push("/onboarding")
             }
         }
 

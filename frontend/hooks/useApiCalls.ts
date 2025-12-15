@@ -159,7 +159,7 @@ export function useConfigurableMutation<TData = any,
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey })
             //@ts-ignore
-            onSuccess?.(data, variables, context);
+            onSuccess?.(data?.data, variables, context);
             //@ts-ignore
             toast.success(data?.message || "Success");
         },
