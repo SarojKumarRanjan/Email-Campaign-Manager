@@ -1,5 +1,5 @@
 import { buildUrl } from '@/lib/utils';
-import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, UseQueryOptions, UseMutationOptions, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import type { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 
@@ -41,42 +41,40 @@ export function useFetch<TData = any, TError = any>(
     key: string[],
     config: FetchConfig,
     options?: UseFetchOptions<TData, TError>
-) {
+): UseQueryResult<TData, TError> {
     const { url, params, data, headers, ...restConfig } = config;
 
-    try {
-        const queryResult = useQuery<TData, TError>({
-            queryKey: [...key, params, data],
-            queryFn: async () => {
-                const axiosConfig: AxiosRequestConfig = {
-                    params,
-                    data,
-                    headers,
-                    ...restConfig,
-                };
+    const queryResult = useQuery<TData, TError>({
+        queryKey: [...key, params, data],
+        queryFn: async () => {
+            const axiosConfig: AxiosRequestConfig = {
+                params,
+                data,
+                headers,
+                ...restConfig,
+            };
 
-                const response = await axiosReqPromise(buildUrl(url.template, url.variables), axiosConfig);
-                return response.data;
-            },
-            retry: 3,
-            retryDelay: 1000,
-            refetchOnWindowFocus: false,
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            ...options,
-        });
-        return {
-            ...queryResult,
-            //@ts-ignore
-            data: queryResult?.data?.data,
+            const response = await axiosReqPromise(buildUrl(url.template, url.variables), axiosConfig);
+            return response.data;
+        },
+        retry: 3,
+        retryDelay: 1000,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        ...options,
+    });
 
-
-        };
-    } catch (error) {
+    //@ts-ignore
+    if (queryResult?.data?.error) {
         //@ts-ignore
-        toast.error(error.response?.data?.message || "Something went wrong");
-        return error;
+        toast.error(queryResult?.data?.message)
     }
 
+    return {
+        ...queryResult,
+        //@ts-ignore
+        data: queryResult?.data?.data ?? queryResult?.data,
+    };
 }
 /**
  * useConfigurableMutation - Custom hook for POST, PUT, DELETE, PATCH requests
@@ -161,10 +159,6 @@ export function useConfigurableMutation<TData = any,
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey })
             //@ts-ignore
-            if (data?.data) {
-                //@ts-ignore
-                data = data?.data
-            }
             onSuccess?.(data, variables, context);
             //@ts-ignore
             toast.success(data?.message || "Success");
@@ -183,36 +177,5 @@ export function useConfigurableMutation<TData = any,
 }
 
 
-/* export function useConfigurableMutation(mutationFunction:(variables: any) => Promise<any>,queryKey:string[],config:UseMutationOptions<any, any, any, any>){
-    const queryClient = useQueryClient();
-    const {onSuccess,onError,onMutate,onSettled,...restOptions} = config;
 
-    const mutation = useMutation({
-        mutationFn:mutationFunction,
-        ...restOptions,
-        onMutate: async(variables)=>{
-            const controller = new AbortController();
-            const signal  = controller.signal;
-
-            return {variables,context:{signal}}
-        },
-        onSuccess: async(data, variables, context) => {
-            await queryClient.invalidateQueries({queryKey});
-            onSuccess?.(data, variables, context);
-           
-            toast.success(data?.message || "Success");
-        },
-        onError: async(error, variables, context) => {
-            onError?.(error, variables, context);
-           
-            toast.error(error.response?.data?.message || "Something went wrong");
-        },
-        onSettled: onSettled ? () => {
-            onSettled();
-        } : undefined,
-    })
-    return {...mutation}; 
-}
-
-*/
 

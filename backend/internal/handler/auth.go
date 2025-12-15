@@ -88,11 +88,14 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	var req types.RefreshTokenRequest
-
-	if err := utils.ReadJSON(w, r, &req); err != nil {
-		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "No refresh token provided")
 		return
+	}
+
+	req := types.RefreshTokenRequest{
+		RefreshToken: cookie.Value,
 	}
 
 	resp, err := h.svc.RefreshToken(&req)
@@ -101,6 +104,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.SetTokenCookies(w, resp.AccessToken, resp.RefreshToken)
+	// remove the message from response on production
 	utils.SuccessResponse(w, http.StatusOK, "Token refreshed successfully", resp)
 }
 
@@ -126,7 +130,7 @@ func (h *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
@@ -143,7 +147,7 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

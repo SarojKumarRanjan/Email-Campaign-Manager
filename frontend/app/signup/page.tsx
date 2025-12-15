@@ -1,4 +1,4 @@
-import { Onboarding } from "@/components/onboarding"
+import { Onboarding } from "@/components/auth/onboarding"
 
 export default function SignupPage() {
   return <Onboarding initialStep="signup" />

@@ -3,10 +3,10 @@
 import * as React from "react"
 import { GalleryVerticalEnd } from "lucide-react"
 
-import { LoginForm } from "@/components/login-form"
-import { SignupForm } from "@/components/signup-form"
-import { OTPForm } from "@/components/otp-form"
-import { ModeToggle } from "./mode-toggle"
+import { LoginForm } from "@/components/auth/login-form"
+import { SignupForm } from "@/components/auth/signup-form"
+import { OTPForm } from "@/components/auth/otp-form"
+import { ModeToggle } from "@/components/layout/mode-toggle"
 import { useRouter } from "next/navigation"
 
 type OnboardingStep = "login" | "signup" | "otp"

@@ -1,11 +1,11 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
-import { AuthGuard } from "@/components/auth-guard"
+import { AuthGuard } from "@/components/auth/auth-guard"
 
 export default function MainLayout({
     children,
