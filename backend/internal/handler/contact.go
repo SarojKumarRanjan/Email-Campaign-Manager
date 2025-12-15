@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"email_campaign/internal/middleware"
 	"email_campaign/internal/service"
 	"email_campaign/internal/types"
 	"email_campaign/internal/utils"
@@ -28,7 +27,7 @@ func (h *ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -57,7 +56,7 @@ func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	}
 	contactId, _ = strconv.ParseUint(id, 10, 64)
 
-	userId, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userId, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -78,7 +77,7 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -138,7 +137,7 @@ func (h *ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -160,7 +159,7 @@ func (h *ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -181,7 +180,7 @@ func (h *ContactHandler) GetContactByEmail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -204,7 +203,7 @@ func (h *ContactHandler) GetContactActivity(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -227,7 +226,7 @@ func (h *ContactHandler) SubscribeContact(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -248,7 +247,7 @@ func (h *ContactHandler) UnsubscribeContact(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -268,7 +267,7 @@ func (h *ContactHandler) BulkCreateContacts(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -289,7 +288,7 @@ func (h *ContactHandler) BulkUpdateContacts(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -310,7 +309,7 @@ func (h *ContactHandler) BulkDeleteContacts(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -358,7 +357,7 @@ func (h *ContactHandler) ImportContacts(w http.ResponseWriter, r *http.Request) 
 	}
 	req.FileData = fileBytes
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -378,7 +377,7 @@ func (h *ContactHandler) ExportContacts(w http.ResponseWriter, r *http.Request) 
 		format = "csv"
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

@@ -17,7 +17,9 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
+
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

@@ -211,7 +211,6 @@ func (s *authService) RefreshToken(req *types.RefreshTokenRequest) (*types.Login
 	return &types.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		// User: ... // We'd need to fetch user again if we want to return it
 	}, nil
 }
 

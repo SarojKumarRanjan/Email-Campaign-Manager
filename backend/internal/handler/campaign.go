@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"email_campaign/internal/middleware"
 	"email_campaign/internal/service"
 	"email_campaign/internal/types"
 	"email_campaign/internal/utils"
@@ -25,7 +24,7 @@ func (h *CampaignHandler) CreateCampaign(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -48,7 +47,7 @@ func (h *CampaignHandler) GetCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -64,7 +63,7 @@ func (h *CampaignHandler) GetCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CampaignHandler) ListCampaigns(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -104,7 +103,7 @@ func (h *CampaignHandler) UpdateCampaign(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -126,7 +125,7 @@ func (h *CampaignHandler) DeleteCampaign(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -148,7 +147,7 @@ func (h *CampaignHandler) DuplicateCampaign(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -176,7 +175,7 @@ func (h *CampaignHandler) ScheduleCampaign(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -198,7 +197,7 @@ func (h *CampaignHandler) SendCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -220,7 +219,7 @@ func (h *CampaignHandler) PauseCampaign(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -242,7 +241,7 @@ func (h *CampaignHandler) ResumeCampaign(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -264,7 +263,7 @@ func (h *CampaignHandler) CancelCampaign(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -286,7 +285,7 @@ func (h *CampaignHandler) GetCampaignRecipients(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -323,7 +322,7 @@ func (h *CampaignHandler) GetCampaignStats(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

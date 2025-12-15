@@ -89,6 +89,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	var req types.RefreshTokenRequest
+
 	if err := utils.ReadJSON(w, r, &req); err != nil {
 		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
@@ -99,7 +100,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, http.StatusUnauthorized, err.Error())
 		return
 	}
-
+	utils.SetTokenCookies(w, resp.AccessToken, resp.RefreshToken)
 	utils.SuccessResponse(w, http.StatusOK, "Token refreshed successfully", resp)
 }
 
@@ -124,7 +125,9 @@ func (h *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+
 	userID, ok := r.Context().Value("userID").(uint64)
+
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

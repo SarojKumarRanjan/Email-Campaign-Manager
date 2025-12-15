@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"email_campaign/internal/middleware"
 	"email_campaign/internal/service"
 	"email_campaign/internal/types"
 	"email_campaign/internal/utils"
@@ -26,7 +25,7 @@ func (h *TemplateHandler) CreateTemplate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -49,7 +48,7 @@ func (h *TemplateHandler) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -65,7 +64,7 @@ func (h *TemplateHandler) GetTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TemplateHandler) ListTemplates(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -106,7 +105,7 @@ func (h *TemplateHandler) UpdateTemplate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -128,7 +127,7 @@ func (h *TemplateHandler) DeleteTemplate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -150,7 +149,7 @@ func (h *TemplateHandler) DuplicateTemplate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -172,7 +171,7 @@ func (h *TemplateHandler) SetDefaultTemplate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

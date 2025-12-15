@@ -42,7 +42,7 @@ func (r *userRepository) CreateUser(user *types.User) error {
 
 func (r *userRepository) GetUserByID(id uint64) (*types.User, error) {
 	var user types.User
-	query := `SELECT id, email, password_hash, first_name, last_name, company_name, is_active, created_at, updated_at 
+	query := `SELECT id, email, password_hash, first_name, last_name,COALESCE(company_name, ''), is_active, created_at, updated_at 
 			  FROM users WHERE id = ?`
 
 	err := r.db.QueryRow(query, id).Scan(
@@ -57,7 +57,7 @@ func (r *userRepository) GetUserByID(id uint64) (*types.User, error) {
 
 func (r *userRepository) GetUserByEmail(email string) (*types.User, error) {
 	var user types.User
-	query := `SELECT id, email, password_hash, first_name, last_name, company_name, is_active, created_at, updated_at 
+	query := `SELECT id, email, password_hash, first_name, last_name,COALESCE(company_name, ''), is_active, created_at, updated_at 
 			  FROM users WHERE email = ?`
 
 	err := r.db.QueryRow(query, email).Scan(
