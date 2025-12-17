@@ -43,7 +43,7 @@ import { DataTableFilterList } from "./data-table-filter-list";
 import { DataTableSortList } from "./data-table-sort-list";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableSkeleton } from "./data-table-skeleton";
-import { NoDataFound } from "@/components/common/no-data-found";
+import NoDataFound from "@/components/common/no-data-found";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -459,7 +459,7 @@ export function DataTable<TData>({
                 {loading ? (
                     <DataTableSkeleton
                         columnCount={table.getAllColumns().length}
-                        rowCount={10}
+                        rowCount={table.getRowCount() ?? 10}
                         className="p-4"
                     />
                 ) : (

@@ -8,14 +8,11 @@ import type { Contact } from "@/types/contact";
 import type { ExtendedColumnFilter } from "@/types/data-table";
 import {
     useQueryState,
-    parseAsInteger,
-    parseAsString,
-    parseAsJson,
-    parseAsArrayOf,
     parseAsBoolean
 } from "nuqs";
+import { useDataTableFilters } from "@/hooks/use-datatable-filters";
 
-// Dummy data
+
 const data: Contact[] = [
     {
         id: 1,
@@ -62,36 +59,36 @@ const data: Contact[] = [
 ];
 
 export default function ContactsPage() {
-    // --- Nuqs State Management (URL as Source of Truth) ---
-    const [serverMode, setServerMode] = useQueryState("serverMode", parseAsBoolean.withDefault(false)); // DEFAULT FALSE to show client-side features by default
 
-    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-    const [pageSize, setPageSize] = useQueryState("per_page", parseAsInteger.withDefault(10));
+    const [serverMode, setServerMode] = useQueryState("serverMode", parseAsBoolean.withDefault(false));
 
-    // Sort State
-    const [sortBy, setSortBy] = useQueryState("sort_by", parseAsString.withDefault("email"));
-    const [sortOrder, setSortOrder] = useQueryState("sort_order", parseAsString.withDefault("asc"));
+    const {
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        sortBy,
+        setSortBy,
+        sortOrder,
+        setSortOrder,
+        filters,
+        setFilters,
+        joinOperator,
+        setJoinOperator
+    } = useDataTableFilters<Contact>({
+        defaultSortBy: "email",
+        defaultSortOrder: "asc"
+    });
 
-    // Filter State (JSON Parser for complex object)
-    const [filters, setFilters] = useQueryState<ExtendedColumnFilter<Contact>[]>(
-        "filters",
-        parseAsJson<ExtendedColumnFilter<Contact>[]>((v) => v as ExtendedColumnFilter<Contact>[]).withDefault([])
-    );
-
-    // Join Operator
-    const [joinOperator, setJoinOperator] = useQueryState("joinOperator", parseAsString.withDefault("and"));
-
-    // Selection (Local state usually fine, but can be URL if persistent selection needed)
     const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
 
     const [loading, setLoading] = React.useState(false);
 
-    // --- Handlers ---
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
         if (serverMode) {
             setLoading(true);
-            setTimeout(() => setLoading(false), 300);
+            setTimeout(() => setLoading(false), 5000);
         }
     };
 
@@ -100,7 +97,7 @@ export default function ContactsPage() {
         setSortOrder(newOrder);
         if (serverMode) {
             setLoading(true);
-            setTimeout(() => setLoading(false), 300);
+            setTimeout(() => setLoading(false), 5000);
         }
     };
 

@@ -69,11 +69,12 @@ export function RichTextEditor({ value, onChange, placeholder, disabled, classNa
         editorProps: {
             attributes: {
                 class: cn(
-                    `min-h-[${height}px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`,
+                    "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                     "prose prose-sm max-w-none dark:prose-invert",
                     "text-foreground",
                     className
                 ),
+                style: `min-height: ${height}px;`,
             },
         },
         onUpdate: ({ editor }) => {
