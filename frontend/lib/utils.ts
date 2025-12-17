@@ -1,5 +1,30 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import Hashids from "hashids";
+
+const hashids = new Hashids(
+  process.env.NEXT_PUBLIC_HASH_SALT,
+  5
+);
+
+/**
+ * 
+ * @param id 
+ * @returns hashed ids
+ */
+export function encodeId(id: number): string {
+  return hashids.encode(id);
+}
+/**
+ * 
+ * @param hash 
+ * @returns decoded ids
+ */
+export function decodeId(hash: string): number | null {
+  const decoded = hashids.decode(hash);
+  return decoded.length ? Number(decoded[0]) : null;
+}
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
