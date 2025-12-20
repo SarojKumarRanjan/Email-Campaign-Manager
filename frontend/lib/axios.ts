@@ -17,8 +17,9 @@ api.interceptors.response.use(
     }
 );
 
-const getAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return await api.get(url, { params, data, headers });
+
+const getAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => {
+    return await api.get(url, config);
 }
 
 const postAxiosForUseFetch = async (url: string, data?: any, config?: AxiosRequestConfig) => {

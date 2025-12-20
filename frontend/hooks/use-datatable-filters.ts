@@ -40,6 +40,7 @@ export function useDataTableFilters<TData = unknown>(
         "sort_by",
         parseAsString.withDefault(defaultSortBy)
     );
+
     const [sortOrder, setSortOrder] = useQueryState(
         "sort_order",
         parseAsString.withDefault(defaultSortOrder)

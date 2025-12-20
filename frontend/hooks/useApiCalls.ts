@@ -48,13 +48,16 @@ export function useFetch<TData = any, TError = any>(
         queryKey: [...key, params, data],
         queryFn: async () => {
             const axiosConfig: AxiosRequestConfig = {
-                params,
                 data,
+                params,
                 headers,
                 ...restConfig,
             };
 
-            const response = await axiosReqPromise(buildUrl(url.template, url.variables), axiosConfig);
+            const response = await axiosReqPromise(buildUrl(url.template, url.variables), {
+                ...axiosConfig,
+            });
+
             return response.data;
         },
         retry: 3,

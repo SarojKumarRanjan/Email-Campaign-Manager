@@ -484,7 +484,7 @@ export function DataTable<TData>({
                     />
                 ) : (
                     <Table>
-                        <TableHeader className="bg-muted h-12 sticky top-0">
+                        <TableHeader className="bg-muted ml-4 h-12 sticky top-0">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {

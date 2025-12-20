@@ -40,7 +40,6 @@ export default function CreateContact() {
             phone: "",
             company: "",
             is_subscribed: true,
-            // custom_fields and tag_ids left undefined or empty for now
         },
     })
 

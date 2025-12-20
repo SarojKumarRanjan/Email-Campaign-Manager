@@ -1,145 +1,266 @@
 "use client";
 
-import { CustomFilter } from "@/components/common/custom-filter";
-import { FilterField } from "@/components/common/filters/filter-list";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-import {
-    Activity,
-    CheckCircle2,
-    Clock,
-    Mail,
-    ShieldCheck,
-    Tag,
-    User,
-    Zap
-} from "lucide-react";
+import * as React from "react";
+import { Trash2 } from "lucide-react";
+import { DataTable, type DataTableColumnDef, type DataTableFilterField } from "@/components/common/data-table";
+import { Badge } from "@/components/ui/badge";
 
-const DEMO_FIELDS: FilterField[] = [
+import type { ExtendedColumnFilter } from "@/types/data-table";
+import {
+    useQueryState,
+    parseAsBoolean
+} from "nuqs";
+import { useDataTableFilters } from "@/hooks/use-datatable-filters";
+
+
+interface Contact {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone?: string;
+    company?: string;
+    is_subscribed?: boolean;
+    custom_fields?: any;
+    tag_ids?: number[];
+}
+const data: Contact[] = [
     {
-        id: "status",
-        label: "Campaign Status",
-        variant: "multiSelect",
-        options: [
-            { label: "Draft", value: "draft", icon: Clock },
-            { label: "Sending", value: "sending", icon: Zap },
-            { label: "Completed", value: "completed", icon: CheckCircle2 },
-            { label: "Paused", value: "paused", icon: Activity },
-        ]
+        id: 1,
+        email: "alice@example.com",
+        first_name: "Alice",
+        last_name: "Johnson",
+        phone: "+1234567890",
+        company: "Tech Corp",
+        is_subscribed: true,
     },
     {
-        id: "type",
-        label: "Contact Type",
-        variant: "select",
-        options: [
-            { label: "Customer", value: "customer", icon: User },
-            { label: "Lead", value: "lead", icon: Zap },
-            { label: "Partner", value: "partner", icon: ShieldCheck },
-        ]
+        id: 2,
+        email: "bob@example.com",
+        first_name: "Bob",
+        last_name: "Smith",
+        phone: "+0987654321",
+        company: "Design Co",
+        is_subscribed: false,
+        tag_ids: [1],
     },
     {
-        id: "tags",
-        label: "Tags",
-        variant: "multiSelect",
-        options: [
-            { label: "Newsletter", value: "newsletter", icon: Mail },
-            { label: "Product Updates", value: "product_updates", icon: Tag },
-            { label: "Promotions", value: "promotions", icon: Tag },
-        ]
+        id: 3,
+        email: "charlie@example.com",
+        first_name: "Charlie",
+        last_name: "Brown",
+        is_subscribed: true,
+        company: "Tech Corp",
     },
     {
-        id: "createdAt",
-        label: "Created Date",
-        variant: "dateRange",
+        id: 4,
+        email: "david@example.com",
+        first_name: "David",
+        last_name: "Wilson",
+        is_subscribed: false,
     },
     {
-        id: "lastActive",
-        label: "Last Active",
-        variant: "date",
+        id: 5,
+        email: "eve@example.com",
+        first_name: "Eve",
+        last_name: "Davis",
+        is_subscribed: true,
+        company: "Startup Inc",
     },
-    {
-        id: "score",
-        label: "Engagement Score",
-        variant: "range",
-        range: [0, 100],
-        unit: "%"
-    },
-    {
-        id: "verified",
-        label: "Verified",
-        variant: "boolean",
-    },
-    {
-        id: "subject",
-        label: "Email Subject",
-        variant: "text",
-        placeholder: "Search subjects..."
-    }
 ];
 
 export default function SettingsPage() {
+
+    const [serverMode, setServerMode] = useQueryState("serverMode", parseAsBoolean.withDefault(false));
+
+    const {
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        sortBy,
+        setSortBy,
+        sortOrder,
+        setSortOrder,
+        filters,
+        setFilters,
+        joinOperator,
+        setJoinOperator
+    } = useDataTableFilters<Contact>({
+        defaultSortBy: "email",
+        defaultSortOrder: "asc"
+    });
+
+    const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
+
+    const [loading, setLoading] = React.useState(false);
+
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+        if (serverMode) {
+            setLoading(true);
+            setTimeout(() => setLoading(false), 5000);
+        }
+    };
+
+    const handleSortChange = (newSortBy: string, newOrder: "asc" | "desc") => {
+        setSortBy(newSortBy);
+        setSortOrder(newOrder);
+        if (serverMode) {
+            setLoading(true);
+            setTimeout(() => setLoading(false), 5000);
+        }
+    };
+
+    const handleFilterChange = (newFilters: ExtendedColumnFilter<Contact>[]) => {
+        setFilters(newFilters);
+        if (serverMode) {
+            setLoading(true);
+            setTimeout(() => setLoading(false), 300);
+        }
+    };
+
+    // --- Configuration ---
+
+    const filterFields: DataTableFilterField<Contact>[] = [
+        {
+            id: "company",
+            label: "Company",
+            options: [
+                { label: "Tech Corp", value: "Tech Corp" },
+                { label: "Design Co", value: "Design Co" },
+                { label: "Startup Inc", value: "Startup Inc" },
+            ]
+        },
+        {
+            id: "is_subscribed",
+            label: "Status",
+            options: [
+                { label: "Subscribed", value: "true" },
+                { label: "Unsubscribed", value: "false" },
+            ]
+        }
+    ];
+
+    const columns: DataTableColumnDef<Contact>[] = [
+        {
+            accessorKey: "email",
+            header: "Email",
+            sortable: true,
+            filterable: true,
+            filterVariant: "text",
+            cell: ({ row }) => <span className="font-medium text-foreground">{row.email}</span>,
+        },
+        {
+            accessorKey: "first_name",
+            header: "First Name",
+            sortable: true,
+            filterable: true,
+            filterVariant: "text",
+            cell: ({ row }) => row.first_name || "-",
+        },
+        {
+            accessorKey: "last_name",
+            header: "Last Name",
+            sortable: true,
+            filterable: true,
+            filterVariant: "text",
+            cell: ({ row }) => row.last_name || "-",
+        },
+        {
+            accessorKey: "company",
+            header: "Company",
+            filterable: true,
+            filterVariant: "multiSelect",
+            cell: ({ value }) => value || <span className="text-muted-foreground">-</span>,
+        },
+        {
+            accessorKey: "is_subscribed",
+            header: "Status",
+            filterable: true,
+            filterVariant: "select",
+            cell: ({ value }) => (
+                <Badge variant={value ? "default" : "secondary"}>
+                    {value ? "Subscribed" : "Unsubscribed"}
+                </Badge>
+            ),
+        },
+    ];
+
     return (
-        <div className="flex flex-1 flex-col gap-6 p-8">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">Component Demo</h1>
-                <p className="text-muted-foreground">
-                    Exploring the new Custom Filter component with all supported filter types.
-                </p>
+        <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
+            <div className="flex items-center justify-between space-y-2">
+                <div>
+                    <h2 className="font-bold text-2xl tracking-tight">Contacts</h2>
+                    <p className="text-muted-foreground">
+                        Manage your contacts with the new Abstracted Table!
+                    </p>
+                </div>
+                {/* Server Mode Toggle for Demo */}
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Server Mode: {serverMode ? "ON" : "OFF"}</span>
+                    <Badge
+                        variant={serverMode ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => setServerMode(!serverMode)}
+                    >
+                        Toggle
+                    </Badge>
+                </div>
             </div>
 
-            <Card className="border-none shadow-sm bg-muted/30">
-                <CardHeader>
-                    <CardTitle>Custom Filter Demo</CardTitle>
-                    <CardDescription>
-                        This instance demonstrates Simple & Advanced modes, URL persistence, and progressive disclosure (3 filters shown initially).
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <CustomFilter
-                        fields={DEMO_FIELDS}
-                        initialVisibleFilters={3}
-                        filterKey="demo_filters"
-                        sortKey="demo_sort"
-                    />
-                </CardContent>
-            </Card>
+            <DataTable
+                data={data}
+                columns={columns}
+                filterFields={filterFields}
+                loading={loading}
+                serverMode={serverMode} // Passes the mode
+                toolbar="advanced"
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="flex flex-col">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Simple Mode</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 text-sm text-muted-foreground">
-                        The simple mode provides a quick toolbar of filters.
-                        It uses individual popovers for each field, keeping common actions accessible.
-                    </CardContent>
-                </Card>
+                // Pagination
+                pagination={{
+                    page: page,
+                    pageSize: pageSize,
+                    total: 100, // In serverMode, this comes from API. In client mode, table calculates it.
+                    onPageChange: handlePageChange,
+                    onPageSizeChange: setPageSize,
+                }}
 
-                <Card className="flex flex-col">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Advanced Mode</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 text-sm text-muted-foreground">
-                        Switching to Advanced mode allows users to build complex queries with multiple operators
-                        and recursive logic (And/Or grouping). Supports drag-and-drop reordering.
-                    </CardContent>
-                </Card>
+                // Sorting
+                sorting={{
+                    sortBy: sortBy,
+                    sortOrder: sortOrder as "asc" | "desc",
+                    onSortChange: handleSortChange,
+                }}
 
-                <Card className="flex flex-col">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Nuqs Sync</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 text-sm text-muted-foreground">
-                        All state is managed via URL search params. Try refreshing the page or
-                        sharing the URL—all your filters and sorting will be preserved.
-                    </CardContent>
-                </Card>
-            </div>
+                // Filtering
+                filtering={{
+                    filters: filters,
+                    onFilterChange: handleFilterChange,
+                    joinOperator: joinOperator as "and" | "or",
+                    onJoinOperatorChange: (op) => setJoinOperator(op)
+                }}
+
+                // Selection
+                selection={{
+                    enabled: true,
+                    selectedRows: selectedRows,
+                    onSelectionChange: setSelectedRows,
+                }}
+
+                // Bulk Actions
+                bulkActions={[
+                    {
+                        label: "Delete",
+                        icon: Trash2,
+                        variant: "destructive",
+                        onClick: (rows) => {
+                            alert(`Deleting ${rows.length} rows`);
+                            setSelectedRows([]);
+                        }
+                    }
+                ]}
+            />
         </div>
     );
 }

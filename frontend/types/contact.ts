@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createContactSchema = z.object({
     email: z.string().email(),
-    first_name: z.string().optional(),
+    first_name: z.string(),
     last_name: z.string().optional(),
     phone: z.string().optional(),
     company: z.string().optional(),
@@ -26,15 +26,16 @@ export const updateContactSchema = z.object({
 
 export type UpdateContactInput = z.infer<typeof updateContactSchema>;
 
+
+
 export const contactSchema = z.object({
     id: z.number(),
     email: z.string().email(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    phone: z.string().optional(),
-    company: z.string().optional(),
-    is_subscribed: z.boolean().optional(),
-    custom_fields: z.any().optional(),
+    name: z.string(),
+    campaign: z.string(),
+    tags: z.array(z.string()),
+    created_at: z.string(),
+    updated_at: z.string(),
     tag_ids: z.array(z.number()).optional(),
 })
 

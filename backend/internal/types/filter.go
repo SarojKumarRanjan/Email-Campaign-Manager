@@ -2,16 +2,24 @@ package types
 
 import "time"
 
+type Filter struct {
+	FilterId     string   `json:"filter_id" form:"filterId"`
+	Operator     string   `json:"operator" form:"operator"`
+	Id           string   `json:"id" form:"id"`
+	Value        []string `json:"value" form:"value"`
+	JoinOperator string   `json:"join_operator" form:"join_operator"`
+	Variant      string   `json:"variant" form:"variant"`
+}
+
 type ContactFilter struct {
 	UserID       uint64   `json:"-"`
-	TagIDs       []uint64 `json:"tag_ids" form:"tag_ids"`
-	IsSubscribed *bool    `json:"is_subscribed" form:"is_subscribed"`
-	IsBounced    *bool    `json:"is_bounced" form:"is_bounced"`
 	Search       string   `json:"search" form:"search"`
 	Page         int      `json:"page" form:"page"`
 	Limit        int      `json:"limit" form:"limit"`
 	SortBy       string   `json:"sort_by" form:"sort_by"`
 	SortOrder    string   `json:"sort_order" form:"sort_order"`
+	JoinOperator string   `json:"join_operator" form:"join_operator"`
+	Filters      []Filter `json:"filters" form:"filters"`
 }
 
 type CampaignFilter struct {
