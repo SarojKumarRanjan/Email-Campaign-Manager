@@ -426,33 +426,53 @@ export function DataTable<TData>({
                             )}
                             <DataTableSortList table={table} />
                             {children}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="ml-auto hidden h-8 font-normal lg:flex">
+                                        <Settings2 className="mr-2 h-4 w-4" />
+                                        Filter Mode
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Toolbar View</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setToolbarMode("simple")}>
+                                        Simple
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setToolbarMode("advanced")}>
+                                        Advanced
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </DataTableAdvancedToolbar>
                     ) : toolbarMode === "simple" ? (
                         <DataTableToolbar table={table}>
                             {children}
+                            <DataTableSortList table={table} />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="ml-auto hidden h-8 font-normal lg:flex">
+                                        <Settings2 className="mr-2 h-4 w-4" />
+                                        Filter Mode
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Toolbar View</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setToolbarMode("simple")}>
+                                        Simple
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setToolbarMode("advanced")}>
+                                        Advanced
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </DataTableToolbar>
                     ) : null}
                 </div>
 
                 {/* Mode Switcher */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="ml-auto hidden h-8 font-normal lg:flex">
-                            <Settings2 className="mr-2 h-4 w-4" />
-                            Filter Mode
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Toolbar View</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setToolbarMode("simple")}>
-                            Simple
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setToolbarMode("advanced")}>
-                            Advanced
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+
             </div>
 
             <div className="rounded-md border overflow-hidden">
