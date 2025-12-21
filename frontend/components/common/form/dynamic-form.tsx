@@ -96,10 +96,7 @@ export function DynamicForm<TFieldValues extends FieldValues>({
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className={cn("grid grid-cols-12 gap-6", className)}>
                 {fields.map((fieldConfig) => {
-                    const colSpan = fieldConfig.cols ? `col-span-${fieldConfig.cols}` : "col-span-12";
-                    // Map simplistic number to tailwind class (tailwind needs full class names safe-listed or exact strings usually)
-                    // We'll use style or a lookup if tailwind JIT is tricky with interpolation, but JIT usually handles dynamic if classes are present.
-                    // Safer: explicit logic or style object. Let's use style for grid-column to be 100% safe regarding dynamic cols, or a lookup.
+
                     const style = { gridColumn: `span ${fieldConfig.cols ?? 12} / span ${fieldConfig.cols ?? 12}` };
 
                     return (
@@ -108,7 +105,7 @@ export function DynamicForm<TFieldValues extends FieldValues>({
                                 control={form.control}
                                 name={fieldConfig.name}
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="-my-1.5">
                                         {/* Label (Skip for checkbox/switch which wraps it, but consistent label is nice) */}
                                         {fieldConfig.type !== "checkbox" && fieldConfig.type !== "switch" && fieldConfig.label && (
                                             <FormLabel>{fieldConfig.label}</FormLabel>
@@ -130,7 +127,7 @@ export function DynamicForm<TFieldValues extends FieldValues>({
                 })}
 
                 {/* Actions Area - Full Width */}
-                <div className="col-span-12 flex items-center gap-2 mt-4">
+                <div className="col-span-12 flex justify-end items-center gap-2 mt-4">
                     {children}
                 </div>
             </form>

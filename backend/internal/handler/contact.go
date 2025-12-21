@@ -128,28 +128,11 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
-	// 1.22 routing or mux specific? user uses standard mux in server.go but logic seemed manual parsing
-	// Wait, server.go uses `mux.Handle("GET /api/v1/contacts/{id}", ...)` which is Go 1.22 pattern
-	// So `r.PathValue("id")` should work if Go version is >= 1.22.
-	// However, previous code `GetContact` used `r.URL.Query().Get("id")`.
-	// The routing in server.go: `mux.Handle("GET /api/v1/contacts/{id}", ...)`
-	// implies we should use path values. But `GetContact` implementation I saw used Query "id".
-	// Let's stick to what I see in `GetContact` implementation if I can ...
-	// Actually `GetContact` I saw earlier:
-	// id := r.URL.Query().Get("id")
-	// But the route is `/api/v1/contacts/{id}`.
-	// If the route is `/contacts/{id}`, then `Query().Get("id")` would be empty unless ?id=... is passed.
-	// I will assume `r.PathValue` is the correct way for Go 1.22+ given the route syntax.
-	// Or I'll fallback to manual parsing if needed.
 
 	idStr := r.PathValue("id")
 	if idStr == "" {
-		// Fallback for older Go or compatibility
-		// Try parsing from path manually if `PathValue` not available (would result in compile error if < 1.22)
-		// Assuming Go 1.22 for now based on `{id}` syntax.
-		// If `GetContact` used Query, maybe the route definition in `server.go` was actually `.../contacts`?
-		// "GET /api/v1/contacts/{id}" is definitely Go 1.22 syntax.
-		// I will use r.PathValue("id") which is correct for that syntax.
+		utils.ErrorResponse(w, http.StatusBadRequest, "Contact ID is required")
+		return
 	}
 
 	contactID, err := strconv.ParseUint(idStr, 10, 64)

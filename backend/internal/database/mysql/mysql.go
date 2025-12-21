@@ -56,8 +56,11 @@ func New(cfg *config.Config) (*service, error) {
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				last_login_at TIMESTAMP NULL,
+				is_deleted BOOLEAN NOT NULL DEFAULT 0,
+				deleted_at TIMESTAMP NULL DEFAULT NULL,
 				INDEX idx_email (email),
-				INDEX idx_created_at (created_at)
+				INDEX idx_created_at (created_at),
+				INDEX idx_users_is_deleted (is_deleted)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{
@@ -84,13 +87,16 @@ func New(cfg *config.Config) (*service, error) {
     auto_renew BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    is_deleted BOOLEAN NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user_id (user_id),
     INDEX idx_status (status),
     INDEX idx_plan_type (plan_type),
     INDEX idx_renewal_date (renewal_date),
     INDEX idx_razorpay_subscription_id (razorpay_subscription_id),
-    INDEX idx_razorpay_customer_id (razorpay_customer_id)
+    INDEX idx_razorpay_customer_id (razorpay_customer_id),
+    INDEX idx_subscriptions_is_deleted (is_deleted)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{
@@ -106,9 +112,12 @@ func New(cfg *config.Config) (*service, error) {
 				is_default BOOLEAN DEFAULT FALSE,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				is_deleted BOOLEAN NOT NULL DEFAULT 0,
+				deleted_at TIMESTAMP NULL DEFAULT NULL,
 				FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 				INDEX idx_user_id (user_id),
-				INDEX idx_created_at (created_at)
+				INDEX idx_created_at (created_at),
+				INDEX idx_email_templates_is_deleted (is_deleted)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{
@@ -130,9 +139,12 @@ func New(cfg *config.Config) (*service, error) {
 				color VARCHAR(7) DEFAULT '#3B82F6',
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				is_deleted BOOLEAN NOT NULL DEFAULT 0,
+				deleted_at TIMESTAMP NULL DEFAULT NULL,
 				FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 				UNIQUE KEY unique_user_tag (user_id, name),
-				INDEX idx_user_id (user_id)
+				INDEX idx_user_id (user_id),
+				INDEX idx_tags_is_deleted (is_deleted)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{
@@ -152,12 +164,15 @@ func New(cfg *config.Config) (*service, error) {
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				last_contacted_at TIMESTAMP NULL,
+				is_deleted BOOLEAN NOT NULL DEFAULT 0,
+				deleted_at TIMESTAMP NULL DEFAULT NULL,
 				FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 				UNIQUE KEY unique_user_contact (user_id, email),
 				INDEX idx_user_id (user_id),
 				INDEX idx_email (email),
 				INDEX idx_is_subscribed (is_subscribed),
-				INDEX idx_is_bounced (is_bounced)
+				INDEX idx_is_bounced (is_bounced),
+				INDEX idx_contacts_is_deleted (is_deleted)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{
@@ -197,12 +212,15 @@ func New(cfg *config.Config) (*service, error) {
 				unsubscribed_count INT DEFAULT 0,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				is_deleted BOOLEAN NOT NULL DEFAULT 0,
+				deleted_at TIMESTAMP NULL DEFAULT NULL,
 				FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 				FOREIGN KEY (template_id) REFERENCES email_templates(id) ON DELETE SET NULL,
 				INDEX idx_user_id (user_id),
 				INDEX idx_status (status),
 				INDEX idx_scheduled_at (scheduled_at),
-				INDEX idx_created_at (created_at)
+				INDEX idx_created_at (created_at),
+				INDEX idx_campaigns_is_deleted (is_deleted)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 		},
 		{

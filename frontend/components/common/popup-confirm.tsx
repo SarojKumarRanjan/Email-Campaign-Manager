@@ -15,7 +15,7 @@ export type PopupConfirmVariant = "info" | "warning" | "error" | "success";
 
 export interface PopupConfirmProps {
     /** Trigger element (button, icon, etc.) */
-    children: React.ReactNode;
+    children?: React.ReactNode;
 
     /** Variant determines the color scheme and icon */
     variant?: PopupConfirmVariant;

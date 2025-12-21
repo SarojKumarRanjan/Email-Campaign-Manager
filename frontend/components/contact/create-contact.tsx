@@ -1,5 +1,4 @@
 "use client"
-import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CreateContactInput, createContactSchema } from "@/types/contact"
@@ -12,24 +11,82 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-    Form,
     FormControl,
-    FormField,
     FormItem,
     FormLabel,
-    FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { useConfigurableMutation } from "@/hooks/useApiCalls"
-import { postAxiosForUseFetch } from "@/lib/axios"
+import { postAxiosForUseFetch, putAxiosForUseFetch } from "@/lib/axios"
 import API_PATH from "@/lib/apiPath"
+import { DynamicForm, FieldConfig } from "../common/form/dynamic-form"
+import { useFetch } from "@/hooks/useApiCalls"
+import { getAxiosForUseFetch } from "@/lib/axios"
+import { useEffect } from "react"
 
-export default function CreateContact({ children, contactId }: { children: React.ReactNode, contactId?: string }) {
-    const [open, setOpen] = React.useState(false)
+
+export default function CreateContact({ open, onClose, contactId }: { open: boolean, onClose: () => void, contactId?: string }) {
+
+
+    const formFileds: FieldConfig<CreateContactInput>[] = [
+        {
+            name: "email",
+            label: "Email",
+            placeholder: "e.g. admin@example.com",
+            type: "email",
+            cols: 12,
+        },
+        {
+            name: "first_name",
+            placeholder: "e.g. John",
+            label: "First Name",
+            type: "text",
+            cols: 6,
+        },
+        {
+            name: "last_name",
+            placeholder: "e.g. Doe",
+            label: "Last Name",
+            type: "text",
+            cols: 6,
+        },
+        {
+            name: "phone",
+            placeholder: "e.g. +91334567890",
+            label: "Phone",
+            type: "text",
+            cols: 12,
+        },
+        {
+            name: "company",
+            placeholder: "e.g. Company Name",
+            label: "Company",
+            type: "text",
+            cols: 12,
+        },
+        {
+            name: "is_subscribed",
+            type: "custom",
+            render: ({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                        <FormLabel>Subscribed</FormLabel>
+                    </div>
+                    <FormControl>
+                        <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                </FormItem>
+            ),
+            cols: 12,
+        },
+    ]
+
+
 
     const form = useForm<CreateContactInput>({
         resolver: zodResolver(createContactSchema),
@@ -45,132 +102,92 @@ export default function CreateContact({ children, contactId }: { children: React
 
     const { mutate: createContact, isPending } = useConfigurableMutation(
         postAxiosForUseFetch,
-        ["createContact"],
+        ["contactslist"],
         {
             onSuccess: () => {
-                setOpen(false)
                 form.reset()
+                onClose()
+
 
             },
         }
     )
 
+    const { mutate: updateContact, isPending: isUpdatePending } = useConfigurableMutation(
+        putAxiosForUseFetch,
+        ["contactslist"],
+        {
+            onSuccess: (data) => {
+                console.log(data)
+                form.reset()
+                onClose()
+
+
+            },
+        }
+    )
+
+    const { data: contact } = useFetch(
+        getAxiosForUseFetch,
+        ["contact", contactId || ""],
+        {
+            url: { template: API_PATH.CONTACTS.GET_CONTACT, variables: [contactId as string] },
+        },
+        {
+            enabled: !!contactId,
+        }
+    )
+
+    useEffect(() => {
+        if (contact) {
+            form.reset(contact)
+        }
+    }, [contact])
+
     const onSubmit = (data: CreateContactInput) => {
-        createContact({
-            url: { template: API_PATH.CONTACTS.CREATE_CONTACT },
-            data,
-        })
+        if (contactId) {
+            updateContact({
+                url: { template: API_PATH.CONTACTS.UPDATE_CONTACT, variables: [contactId as string] },
+                data,
+            })
+        } else {
+            createContact({
+                url: { template: API_PATH.CONTACTS.CREATE_CONTACT },
+                data,
+            })
+        }
+    }
+
+    const handleCancel = () => {
+        form.reset()
+        onClose()
+
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={handleCancel} >
             <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
                 <DialogHeader>
-                    <DialogTitle>Create Contact</DialogTitle>
+                    <DialogTitle>{contactId ? "Edit" : "Create"} Contact</DialogTitle>
                     <DialogDescription>
-                        Add a new contact to your list. Click save when you're done.
+                        {contactId ? "Edit" : "Add"} a new contact to your list. Click save when you're done.
                     </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="m@example.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="first_name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="John" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="last_name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Doe" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                <DynamicForm
+                    form={form}
+                    onSubmit={onSubmit}
+                    fields={formFileds}
+                >
+                    <DialogFooter >
+                        <DialogClose asChild>
+                            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={isPending || isUpdatePending}>
+                            {isPending ? "Saving..." : "Save"}
+                        </Button>
+                    </DialogFooter>
+                </DynamicForm>
 
-                        <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Phone</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="+91..." {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="company"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Company</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Acme Inc." {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="is_subscribed"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>Subscribed</FormLabel>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button type="submit" disabled={isPending}>
-                                {isPending ? "Saving..." : "Save"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
             </DialogContent>
         </Dialog>
     )

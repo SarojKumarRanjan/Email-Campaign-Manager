@@ -22,20 +22,20 @@ const getAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => 
     return await api.get(url, config);
 }
 
-const postAxiosForUseFetch = async (url: string, data?: any, config?: AxiosRequestConfig) => {
-    return await api.post(url, data, config);
+const postAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => {
+    return await api.post(url, config);
 }
 
-const putAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, config?: AxiosRequestConfig) => {
-    return await api.put(url, { params, data }, config);
+const putAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => {
+    return await api.put(url, config);
 }
 
-const patchAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, config?: AxiosRequestConfig) => {
-    return await api.patch(url, { params, data }, config);
+const patchAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => {
+    return await api.patch(url, config);
 }
 
-const deleteAxiosForUseFetch = async (url: string, params?: Record<string, any>, data?: any, headers?: Record<string, string>) => {
-    return await api.delete(url, { params, data, headers });
+const deleteAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) => {
+    return await api.delete(url, config);
 }
 
 export {
@@ -43,4 +43,5 @@ export {
     postAxiosForUseFetch,
     putAxiosForUseFetch,
     deleteAxiosForUseFetch,
+    patchAxiosForUseFetch
 }

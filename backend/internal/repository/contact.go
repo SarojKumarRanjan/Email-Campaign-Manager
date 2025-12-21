@@ -88,17 +88,17 @@ func (r *contactRepository) CreateContact(contact *types.CreateContactRequest) e
 
 func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.ContactDTO, error) {
 
-	baseQuery := `SELECT id, user_id, email, first_name, last_name, phone, company, is_subscribed, is_bounced, bounce_count, custom_fields, created_at, updated_at, last_contacted_at FROM contacts WHERE id = ? AND user_id = ?`
+	baseQuery := `SELECT id, user_id, email, first_name, last_name, phone, company, is_subscribed, is_bounced, bounce_count, created_at, updated_at, last_contacted_at FROM contacts WHERE id = ? AND user_id = ?`
 	//get tags as well
 
-	args := []interface{}{id, userId, id}
+	args := []interface{}{id, userId}
 
 	row := r.db.QueryRow(baseQuery, args...)
 	var contact types.ContactDTO
 	if err := row.Scan(
 		&contact.ID, &contact.UserID, &contact.Email, &contact.FirstName, &contact.LastName,
 		&contact.Phone, &contact.Company, &contact.IsSubscribed, &contact.IsBounced,
-		&contact.BounceCount, &contact.CustomFields, &contact.CreatedAt, &contact.UpdatedAt,
+		&contact.BounceCount, &contact.CreatedAt, &contact.UpdatedAt,
 		&contact.LastContactedAt,
 	); err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.Contact
 func (r *contactRepository) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactListDTO, int64, error) {
 	baseQuery := `SELECT id, email, CONCAT(first_name, ' ', last_name) as name, '' as campaign, 
                   created_at, updated_at 
-                  FROM contacts WHERE user_id = ?`
+                  FROM contacts WHERE user_id = ? AND deleted_at IS NULL AND is_deleted = 0`
 	args := []interface{}{filter.UserID}
 	// Define allowed filter fields and their database column mappings
 	allowedFields := map[string]string{
@@ -291,7 +291,7 @@ func (r *contactRepository) UpdateContact(contactID uint64, userID uint64, req *
 }
 
 func (r *contactRepository) DeleteContact(contactID uint64, userID uint64) error {
-	result, err := r.db.Exec("DELETE FROM contacts WHERE id = ? AND user_id = ?", contactID, userID)
+	result, err := r.db.Exec("UPDATE contacts SET deleted_at = NOW(), is_deleted = 1 WHERE id = ? AND user_id = ?", contactID, userID)
 	if err != nil {
 		return err
 	}

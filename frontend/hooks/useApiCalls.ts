@@ -67,12 +67,12 @@ export function useFetch<TData = any, TError = any>(
         ...options,
     });
 
-    console.log(queryResult?.isError)
-    //@ts-ignore    
-    if (queryResult?.isError) {
-        //@ts-ignore
-        toast.error(queryResult?.error?.message)
-    }
+
+    /*     //@ts-ignore    
+        if (queryResult?.isError) {
+            //@ts-ignore
+            toast.error(queryResult?.error?.message)
+        } */
 
     return {
         ...queryResult,
