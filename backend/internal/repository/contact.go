@@ -121,7 +121,7 @@ func (r *contactRepository) ListContacts(ctx context.Context, filter *types.Cont
 		"updated_at":    "updated_at",
 		"is_subscribed": "is_subscribed",
 		"is_bounced":    "is_bounced",
-		"tags":          "tag_id", // Special handling needed for tags
+		"tags":          "tag_id",
 	}
 	// Build dynamic filter conditions
 	if len(filter.Filters) > 0 {
@@ -156,6 +156,7 @@ func (r *contactRepository) ListContacts(ctx context.Context, filter *types.Cont
 			}
 		}
 		// Handle regular filters
+		log.Println(regularFilters)
 		if len(regularFilters) > 0 {
 			condition, filterArgs, err := fb.BuildFilterConditions(regularFilters, filter.JoinOperator, allowedFields)
 			log.Println(condition)

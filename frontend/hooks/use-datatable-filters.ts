@@ -21,7 +21,7 @@ export function useDataTableFilters<TData = unknown>(
 ) {
     const {
         defaultPage = 1,
-        defaultPageSize = 10,
+        defaultPageSize = 5,
         defaultSortBy = "created_at",
         defaultSortOrder = "desc",
         defaultFilters = [],

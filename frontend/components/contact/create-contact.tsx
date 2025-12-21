@@ -28,7 +28,7 @@ import { useConfigurableMutation } from "@/hooks/useApiCalls"
 import { postAxiosForUseFetch } from "@/lib/axios"
 import API_PATH from "@/lib/apiPath"
 
-export default function CreateContact() {
+export default function CreateContact({ children, contactId }: { children: React.ReactNode, contactId?: string }) {
     const [open, setOpen] = React.useState(false)
 
     const form = useForm<CreateContactInput>({
@@ -65,7 +65,7 @@ export default function CreateContact() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>+ Create Contact</Button>
+                {children}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
                 <DialogHeader>

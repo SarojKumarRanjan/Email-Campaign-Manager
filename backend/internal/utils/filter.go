@@ -26,7 +26,7 @@ func (fb *FilterBuilder) BuildFilterConditions(filters []types.Filter, joinOp st
 
 	for _, filter := range filters {
 		// Validate field is allowed
-		dbColumn, ok := allowedFields[filter.FilterId]
+		dbColumn, ok := allowedFields[filter.Id]
 		if !ok {
 			continue // Skip invalid fields
 		}

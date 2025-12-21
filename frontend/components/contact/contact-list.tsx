@@ -12,7 +12,8 @@ import { getAxiosForUseFetch } from "@/lib/axios";
 import { ListResponse } from "@/types";
 import { formatReadableDateSafe } from "@/lib/utils";
 import { Text } from "../common/typography";
-import ContactEditCreate from "./edit-create";
+import CreateContact from "./create-contact";
+import PopupConfirm from "../common/popup-confirm";
 
 
 
@@ -48,10 +49,21 @@ export default function ContactList() {
             },
             params: {
                 page,
-                page_size: pageSize,
+                limit: pageSize,
                 sort_by: sortBy,
                 sort_order: sortOrder,
-                filters: JSON.stringify(filters),
+                filters: JSON.stringify(filters.map((item) => {
+                    if (!Array.isArray(item.value)) {
+                        return {
+                            ...item,
+                            value: [item.value]
+                        }
+                    }
+                    return ({
+                        ...item,
+                        value: item.value
+                    })
+                })),
                 join_operator: joinOperator
             }
         }
@@ -126,7 +138,10 @@ export default function ContactList() {
             sortable: true,
             filterable: true,
             filterVariant: "select",
-            cell: ({ value }) => value,
+            cell: ({ value }) => {
+                if (!value) return "-";
+                return value
+            },
         },
         {
             header: "Tags",
@@ -135,7 +150,7 @@ export default function ContactList() {
             filterVariant: "multiSelect",
             sortable: false,
             cell: ({ value }) => {
-                if (!value) return "";
+                if (!value) return "-";
                 return (
                     <div className="grid grid-cols-3 gap-2">
                         {value.map((tag: string) => (
@@ -168,14 +183,25 @@ export default function ContactList() {
             sortable: false,
             cell: ({ value }) => (
                 <div className="flex items-center gap-2">
-                    <ContactEditCreate contactId={value}>
+                    <CreateContact contactId={value}>
                         <Button variant="ghost" size="icon">
                             <SquarePen className="size-4" />
                         </Button>
-                    </ContactEditCreate>
-                    <Button variant="ghost" size="icon">
-                        <Trash2 className="size-4" />
-                    </Button>
+                    </CreateContact>
+                    <PopupConfirm
+                        variant="error"
+                        title="Delete Contact?"
+                        description="This will permanently delete this contact. This action cannot be undone."
+                        proceedText="Delete"
+                        onProceed={() => {
+                            console.log("Deleting contact:", value);
+                            // TODO: Implement delete API call
+                        }}
+                    >
+                        <Button variant="ghost" size="icon">
+                            <Trash2 className="size-4" />
+                        </Button>
+                    </PopupConfirm>
                 </div>
             ),
         },

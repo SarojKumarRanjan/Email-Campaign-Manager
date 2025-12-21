@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Heading,
     Subheading,
@@ -13,7 +15,7 @@ import {
 } from "@/components/common/typography";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PageHeader from "@/components/common/page-header";
-
+import PopupConfirmExamples from "@/components/common/popup-confirm-examples";
 export default function CampaignsPage() {
     return (
         <div className="flex flex-1 flex-col gap-8 p-8">
@@ -21,6 +23,7 @@ export default function CampaignsPage() {
                 title="Typography System"
                 description="Complete typography components for consistent text styling across the application"
             />
+            <PopupConfirmExamples />
 
             <div className="grid gap-6">
                 {/* Headings */}

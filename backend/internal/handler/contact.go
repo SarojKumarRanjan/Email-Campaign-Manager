@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -97,7 +96,7 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	filter.JoinOperator = defaultString(query.Get("join_operator"), "and")
 
 	filtersJSON := query.Get("filters")
-	log.Println(filtersJSON)
+
 	if filtersJSON != "" {
 		if err := json.Unmarshal([]byte(filtersJSON), &filter.Filters); err != nil {
 			utils.ErrorResponse(w, http.StatusBadRequest, "Invalid filters format")
