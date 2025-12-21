@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"email_campaign/internal/types"
@@ -14,7 +15,7 @@ import (
 type ContactRepository interface {
 	CreateContact(contact *types.CreateContactRequest) error
 	GetContact(id uint64, userId uint64) (*types.ContactDTO, error)
-	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error)
+	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactListDTO, int64, error)
 	UpdateContact(contactID uint64, userID uint64, req *types.UpdateContactRequest) error
 	DeleteContact(contactID uint64, userID uint64) error
 	GetContactByEmail(email string, userID uint64) (*types.ContactDTO, error)
@@ -105,77 +106,99 @@ func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.Contact
 	return &contact, nil
 }
 
-func (r *contactRepository) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error) {
-	baseQuery := `SELECT id, user_id, email, first_name, last_name, phone, company, is_subscribed, is_bounced, bounce_count, custom_fields, created_at, updated_at, last_contacted_at FROM contacts WHERE user_id = ?`
+func (r *contactRepository) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactListDTO, int64, error) {
+	baseQuery := `SELECT id, email, CONCAT(first_name, ' ', last_name) as name, '' as campaign, 
+                  created_at, updated_at 
+                  FROM contacts WHERE user_id = ?`
 	args := []interface{}{filter.UserID}
+	// Define allowed filter fields and their database column mappings
+	allowedFields := map[string]string{
+		"email":         "email",
+		"first_name":    "first_name",
+		"last_name":     "last_name",
+		"company":       "company",
+		"created_at":    "created_at",
+		"updated_at":    "updated_at",
+		"is_subscribed": "is_subscribed",
+		"is_bounced":    "is_bounced",
+		"tags":          "tag_id", // Special handling needed for tags
+	}
+	// Build dynamic filter conditions
+	if len(filter.Filters) > 0 {
+		fb := utils.NewFilterBuilder()
 
-	if len(filter.TagIDs) > 0 {
-		baseQuery = `SELECT DISTINCT c.id, c.user_id, c.email, c.first_name, c.last_name, c.phone, c.company, c.is_subscribed, c.is_bounced, c.bounce_count, c.custom_fields, c.created_at, c.updated_at, c.last_contacted_at 
-                 FROM contacts c 
-                 JOIN contact_tags ct ON c.id = ct.contact_id 
-                 WHERE c.user_id = ?`
+		// Separate tag filters from regular filters
+		regularFilters := []types.Filter{}
+		tagFilters := []types.Filter{}
 
-		placeholders := make([]string, len(filter.TagIDs))
-		for i, id := range filter.TagIDs {
-			placeholders[i] = "?"
-			args = append(args, id)
+		for _, f := range filter.Filters {
+			if f.Id == "tags" {
+				tagFilters = append(tagFilters, f)
+			} else {
+				regularFilters = append(regularFilters, f)
+			}
 		}
-		baseQuery += fmt.Sprintf(" AND ct.tag_id IN (%s)", strings.Join(placeholders, ","))
-	}
+		// Handle tag filters with JOIN
+		if len(tagFilters) > 0 {
+			baseQuery = `SELECT DISTINCT c.id, c.email, CONCAT(c.first_name, ' ', c.last_name) as name, '' as campaign, 
+                        c.created_at, c.updated_at 
+                        FROM contacts c 
+                        JOIN contact_tags ct ON c.id = ct.contact_id 
+                        WHERE c.user_id = ?`
 
-	if filter.IsSubscribed != nil {
-		baseQuery += " AND is_subscribed = ?"
-		args = append(args, *filter.IsSubscribed)
+			tagCondition, tagArgs, err := fb.BuildFilterConditions(tagFilters, filter.JoinOperator, allowedFields)
+			if err != nil {
+				return nil, 0, err
+			}
+			if tagCondition != "" {
+				baseQuery += " AND " + tagCondition
+				args = append(args, tagArgs...)
+			}
+		}
+		// Handle regular filters
+		if len(regularFilters) > 0 {
+			condition, filterArgs, err := fb.BuildFilterConditions(regularFilters, filter.JoinOperator, allowedFields)
+			log.Println(condition)
+			log.Println(filterArgs)
+			if err != nil {
+				return nil, 0, err
+			}
+			if condition != "" {
+				baseQuery += " AND " + condition
+				args = append(args, filterArgs...)
+			}
+		}
 	}
-
-	if filter.IsBounced != nil {
-		baseQuery += " AND is_bounced = ?"
-		args = append(args, *filter.IsBounced)
-	}
-
-	// Initialize Paginator
+	// Use existing paginator for search, sorting, and pagination
 	paginator := utils.NewPaginator(filter.Page, filter.Limit, filter.SortBy, filter.SortOrder, filter.Search)
-
-	// Define allowed sort fields and search fields
 	allowedSortFields := []string{"created_at", "updated_at", "email", "first_name", "last_name", "company"}
 	searchFields := []string{"email", "first_name", "last_name", "company"}
-
-	// Build Count Query
+	// Build count query
 	countQuery, countArgs := paginator.BuildCountQuery(baseQuery, args, searchFields)
 	var total int64
 	err := r.db.QueryRowContext(ctx, countQuery, countArgs...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
-
-	// Apply Pagination, Sorting, and Search to the main query
+	// Apply pagination and sorting
 	query, queryArgs := paginator.Apply(baseQuery, args, allowedSortFields, searchFields)
-
 	rows, err := r.db.QueryContext(ctx, query, queryArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
-
-	var contacts []types.ContactDTO
+	var contacts []types.ContactListDTO
 	for rows.Next() {
-		var c types.ContactDTO
-		var customFields []byte
+		var c types.ContactListDTO
 		err := rows.Scan(
-			&c.ID, &c.UserID, &c.Email, &c.FirstName, &c.LastName,
-			&c.Phone, &c.Company, &c.IsSubscribed, &c.IsBounced,
-			&c.BounceCount, &customFields, &c.CreatedAt, &c.UpdatedAt,
-			&c.LastContactedAt,
+			&c.ID, &c.Email, &c.Name, &c.Campaign,
+			&c.CreatedAt, &c.UpdatedAt,
 		)
 		if err != nil {
 			return nil, 0, err
 		}
-		if len(customFields) > 0 {
-			c.CustomFields = json.RawMessage(customFields)
-		}
 		contacts = append(contacts, c)
 	}
-
 	return contacts, total, nil
 }
 

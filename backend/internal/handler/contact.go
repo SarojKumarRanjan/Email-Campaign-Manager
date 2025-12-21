@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -70,11 +71,38 @@ func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, http.StatusOK, "Contact retrieved successfully", contact)
 }
 
+func parseIntDefault(val string, def int) int {
+	if v, err := strconv.Atoi(val); err == nil {
+		return v
+	}
+	return def
+}
+
+func defaultString(val, def string) string {
+	if val == "" {
+		return def
+	}
+	return val
+}
+
 func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	var filter types.ContactFilter
-	if err := utils.ReadJSON(w, r, &filter); err != nil {
-		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
-		return
+	query := r.URL.Query()
+
+	filter.Page = parseIntDefault(query.Get("page"), 1)
+	filter.Limit = parseIntDefault(query.Get("limit"), 10)
+	filter.SortBy = defaultString(query.Get("sort_by"), "created_at")
+	filter.SortOrder = defaultString(query.Get("sort_order"), "desc")
+	filter.Search = query.Get("search")
+	filter.JoinOperator = defaultString(query.Get("join_operator"), "and")
+
+	filtersJSON := query.Get("filters")
+	log.Println(filtersJSON)
+	if filtersJSON != "" {
+		if err := json.Unmarshal([]byte(filtersJSON), &filter.Filters); err != nil {
+			utils.ErrorResponse(w, http.StatusBadRequest, "Invalid filters format")
+			return
+		}
 	}
 
 	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
@@ -91,10 +119,10 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]interface{}{
-		"contacts": contacts,
-		"total":    total,
-		"page":     filter.Page,
-		"limit":    filter.Limit,
+		"data":  contacts,
+		"total": total,
+		"page":  filter.Page,
+		"limit": filter.Limit,
 	}
 
 	utils.SuccessResponse(w, http.StatusOK, "Contacts retrieved successfully", response)

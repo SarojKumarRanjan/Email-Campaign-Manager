@@ -3,12 +3,11 @@ package types
 import "time"
 
 type Filter struct {
-	FilterId     string   `json:"filter_id" form:"filterId"`
-	Operator     string   `json:"operator" form:"operator"`
-	Id           string   `json:"id" form:"id"`
-	Value        []string `json:"value" form:"value"`
-	JoinOperator string   `json:"join_operator" form:"join_operator"`
-	Variant      string   `json:"variant" form:"variant"`
+	FilterId string   `json:"filterId" form:"filterId"`
+	Operator string   `json:"operator" form:"operator"`
+	Id       string   `json:"id" form:"id"`
+	Value    []string `json:"value" form:"value"`
+	Variant  string   `json:"variant" form:"variant"`
 }
 
 type ContactFilter struct {

@@ -479,7 +479,7 @@ export function DataTable<TData>({
                 {loading ? (
                     <DataTableSkeleton
                         columnCount={table.getAllColumns().length}
-                        rowCount={table.getRowCount() ?? 10}
+                        rowCount={6}
                         className="p-4"
                     />
                 ) : (
@@ -557,7 +557,7 @@ export function DataTable<TData>({
                 )}
             </div>
 
-            <DataTablePagination table={table} />
+            {!loading && <DataTablePagination table={table} />}
 
             {/* Floating Bar for Bulk Actions */}
             {(selection?.enabled && selection.selectedRows.length > 0 && bulkActions) ? (

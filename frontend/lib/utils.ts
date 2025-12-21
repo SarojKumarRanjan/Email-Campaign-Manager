@@ -81,3 +81,16 @@ export function buildUrl(
   return url;
 }
 
+export function formatReadableDateSafe(isoDate?: string): string {
+  if (!isoDate) return "";
+
+  const date = new Date(isoDate);
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}

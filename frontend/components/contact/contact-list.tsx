@@ -9,9 +9,12 @@ import { Contact } from "@/types/contact";
 import { useFetch } from "@/hooks/useApiCalls";
 import API_PATH from "@/lib/apiPath";
 import { getAxiosForUseFetch } from "@/lib/axios";
+import { ListResponse } from "@/types";
+import { formatReadableDateSafe } from "@/lib/utils";
+import { Text } from "../common/typography";
+import ContactEditCreate from "./edit-create";
 
 
-const serverMode = false;
 
 export default function ContactList() {
 
@@ -30,57 +33,44 @@ export default function ContactList() {
         setJoinOperator
     } = useDataTableFilters<Contact>({
         defaultSortBy: "email",
-        defaultSortOrder: "asc"
+        defaultSortOrder: "desc"
     });
 
 
-    const isLoading = false;
-    /*     const { data: contactsList, isLoading } = useFetch<Contact[]>(
-            getAxiosForUseFetch,
-            ["contactslist"],
-    
-            {
-                url: {
-                    template: API_PATH.CONTACTS.LIST_CONTACTS,
-                },
-                params: {
-                    page,
-                    page_size: pageSize,
-                    sort_by: sortBy,
-                    sort_order: sortOrder,
-                    filters: JSON.stringify(filters),
-                    join_operator: joinOperator
-                }
-            }
-    
-        )
-    
-        console.log({ contactsList }); */
 
-    console.log({ filters });
+    const { data: contactsList, isLoading } = useFetch<ListResponse<Contact>>(
+        getAxiosForUseFetch,
+        ["contactslist"],
+
+        {
+            url: {
+                template: API_PATH.CONTACTS.LIST_CONTACTS,
+            },
+            params: {
+                page,
+                page_size: pageSize,
+                sort_by: sortBy,
+                sort_order: sortOrder,
+                filters: JSON.stringify(filters),
+                join_operator: joinOperator
+            }
+        }
+
+    )
+
 
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
-        if (serverMode) {
-
-        }
     };
 
     const handleSortChange = (newSortBy: string, newOrder: "asc" | "desc") => {
         setSortBy(newSortBy);
         setSortOrder(newOrder);
-        if (serverMode) {
-
-        }
     };
 
     const handleFilterChange = (newFilters: ExtendedColumnFilter<Contact>[]) => {
         setFilters(newFilters);
-        if (serverMode) {
-
-            setTimeout(() => setPage(1), 300);
-        }
     };
 
     const filterFileds: DataTableFilterField<Contact>[] = [
@@ -120,7 +110,7 @@ export default function ContactList() {
             sortable: true,
             filterable: true,
             filterVariant: "text",
-            cell: ({ value }) => value,
+            cell: ({ value }) => <Text>{value}</Text>,
             width: 200,
         },
         {
@@ -145,6 +135,7 @@ export default function ContactList() {
             filterVariant: "multiSelect",
             sortable: false,
             cell: ({ value }) => {
+                if (!value) return "";
                 return (
                     <div className="grid grid-cols-3 gap-2">
                         {value.map((tag: string) => (
@@ -162,24 +153,26 @@ export default function ContactList() {
             filterable: true,
             filterVariant: "dateRange",
             sortable: true,
-            cell: ({ value }) => value,
+            cell: ({ value }) => formatReadableDateSafe(value),
         },
         {
             header: "Updated At",
             accessorKey: "updated_at",
             sortable: false,
-            cell: ({ value }) => value,
+            cell: ({ value }) => formatReadableDateSafe(value),
         },
         {
             header: "Actions",
             accessorKey: "id",
             resizable: true,
             sortable: false,
-            cell: ({ row }) => (
+            cell: ({ value }) => (
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
-                        <SquarePen className="size-4" />
-                    </Button>
+                    <ContactEditCreate contactId={value}>
+                        <Button variant="ghost" size="icon">
+                            <SquarePen className="size-4" />
+                        </Button>
+                    </ContactEditCreate>
                     <Button variant="ghost" size="icon">
                         <Trash2 className="size-4" />
                     </Button>
@@ -188,202 +181,21 @@ export default function ContactList() {
         },
 
     ];
-    const data = [
-        {
-            id: 1,
-            email: "john.doe@example.com",
-            name: "John Doe",
-            campaign: "Campaign 1",
-            tags: ["Tag 1", "Tag 2"],
-            created_at: "2023-01-01",
-            updated_at: "2023-01-01",
-        },
-        {
-            id: 2,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 3,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 4,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 5,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 6,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 7,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 8,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 9,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 10,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 11,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 12,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 13,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 14,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 15,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 16,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 17,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 18,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 19,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-        {
-            id: 20,
-            email: "jane.doe@example.com",
-            name: "Jane Doe",
-            campaign: "Campaign 2",
-            tags: ["Tag 3", "Tag 4"],
-            created_at: "2023-01-02",
-            updated_at: "2023-01-02",
-        },
-    ];
+
     return (
         <div>
             <DataTable
                 filterFields={filterFileds}
                 columns={columns}
-                data={data}
+                data={contactsList?.data || []}
                 toolbar="simple"
                 loading={isLoading}
-
+                serverMode={true}
                 // Pagination
                 pagination={{
                     page: page,
                     pageSize: pageSize,
-                    total: 100, // In serverMode, this comes from API. In client mode, table calculates it.
+                    total: contactsList?.total || 0,
                     onPageChange: handlePageChange,
                     onPageSizeChange: setPageSize,
                 }}

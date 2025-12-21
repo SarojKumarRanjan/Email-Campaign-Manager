@@ -60,7 +60,7 @@ export function useFetch<TData = any, TError = any>(
 
             return response.data;
         },
-        retry: 3,
+        retry: 0,
         retryDelay: 1000,
         refetchOnWindowFocus: false,
         staleTime: 5 * 60 * 1000, // 5 minutes

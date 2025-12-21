@@ -11,7 +11,7 @@ import (
 type ContactService interface {
 	CreateContact(req *types.CreateContactRequest) error
 	GetContact(id uint64, userId uint64) (*types.ContactDTO, error)
-	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error)
+	ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactListDTO, int64, error)
 	UpdateContact(contactID uint64, userID uint64, req *types.UpdateContactRequest) error
 	DeleteContact(contactID uint64, userID uint64) error
 	GetContactByEmail(email string, userID uint64) (*types.ContactDTO, error)
@@ -41,7 +41,7 @@ func (s *contactService) GetContact(id uint64, userId uint64) (*types.ContactDTO
 	return s.repo.GetContact(id, userId)
 }
 
-func (s *contactService) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactDTO, int64, error) {
+func (s *contactService) ListContacts(ctx context.Context, filter *types.ContactFilter) ([]types.ContactListDTO, int64, error) {
 	return s.repo.ListContacts(ctx, filter)
 }
 
@@ -164,30 +164,30 @@ func (s *contactService) ImportContacts(userID uint64, req *types.ImportContacts
 
 func (s *contactService) ExportContacts(userID uint64, filter *types.ContactFilter, format string) ([]byte, error) {
 	// For export, we likely want all contacts matching filter, so high limit
-	filter.Limit = 100000 // reasonable max for now
-	filter.Page = 1
+	// filter.Limit = 100000 // reasonable max for now
+	// filter.Page = 1
 
-	contacts, _, err := s.repo.ListContacts(context.Background(), filter)
-	if err != nil {
-		return nil, err
-	}
+	// contacts, _, err := s.repo.ListContacts(context.Background(), filter)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	var data []map[string]interface{}
-	for _, c := range contacts {
-		row := map[string]interface{}{
-			"email":      c.Email,
-			"first_name": c.FirstName,
-			"last_name":  c.LastName,
-			"phone":      c.Phone,
-			"company":    c.Company,
-			"created_at": c.CreatedAt.Format("2006-01-02 15:04:05"),
-		}
-		data = append(data, row)
-	}
+	// var data []map[string]interface{}
+	// for _, c := range contacts {
+	// 	row := map[string]interface{}{
+	// 		"email":      c.Email,
+	// 		"first_name": c.FirstName,
+	// 		"last_name":  c.LastName,
+	// 		"phone":      c.Phone,
+	// 		"company":    c.Company,
+	// 		"created_at": c.CreatedAt.Format("2006-01-02 15:04:05"),
+	// 	}
+	// 	data = append(data, row)
+	// }
 
-	if format == "csv" {
-		return utils.GenerateCSV(data)
-	}
+	// if format == "csv" {
+	// 	return utils.GenerateCSV(data)
+	// }
 	// TODO: Excel generation if needed, reusing logic
 	return nil, errors.New("unsupported format")
 }

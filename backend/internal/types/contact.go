@@ -23,6 +23,16 @@ type ContactDTO struct {
 	Tags            []Tag           `json:"tags,omitempty"`
 }
 
+type ContactListDTO struct {
+	ID        uint64    `json:"id"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	Campaign  string    `json:"campaign"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Tags      []Tag     `json:"tags,omitempty"`
+}
+
 type CreateContactRequest struct {
 	UserID       uint64          `json:"-"`
 	Email        string          `json:"email" binding:"required,email"`
