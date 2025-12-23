@@ -12,7 +12,7 @@ export default function ContactsPage() {
 
 
     return (
-        <div className="p-4 grow flex flex-col gap-4">
+        <div className="p-4  flex-1 flex flex-col gap-4">
             <PageHeader
                 title="Contacts"
                 rightNode={<CreateContactComponent />}

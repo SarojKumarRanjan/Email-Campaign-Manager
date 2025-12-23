@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"email_campaign/internal/types"
+	"time"
 )
 
 type TagRepository interface {
@@ -29,8 +30,8 @@ func NewTagRepository(db *sql.DB) TagRepository {
 }
 
 func (r *tagRepository) CreateTag(tag *types.Tag) error {
-	query := `INSERT INTO tags (user_id, name, description, color) VALUES (?, ?, ?, ?)`
-	res, err := r.db.Exec(query, tag.UserID, tag.Name, tag.Description, tag.Color)
+	query := `INSERT INTO tags (user_id, name, description, color, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`
+	res, err := r.db.Exec(query, tag.UserID, tag.Name, tag.Description, tag.Color, time.Now(), time.Now())
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (r *tagRepository) CreateTag(tag *types.Tag) error {
 
 func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 	var tag types.Tag
-	query := `SELECT id, user_id, name, description, color, created_at, updated_at FROM tags WHERE id = ?`
+	query := `SELECT id, user_id, name, description, color, created_at, updated_at FROM tags WHERE id = ? AND is_deleted = 0`
 	err := r.db.QueryRow(query, id).Scan(
 		&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt,
 	)
@@ -76,14 +77,14 @@ func (r *tagRepository) ListTags(userID uint64) ([]types.Tag, error) {
 }
 
 func (r *tagRepository) UpdateTag(tag *types.Tag) error {
-	query := `UPDATE tags SET name = ?, description = ?, color = ? WHERE id = ?`
-	_, err := r.db.Exec(query, tag.Name, tag.Description, tag.Color, tag.ID)
+	query := `UPDATE tags SET name = ?, description = ?, color = ?, updated_at = ? WHERE id = ?`
+	_, err := r.db.Exec(query, tag.Name, tag.Description, tag.Color, time.Now(), tag.ID)
 	return err
 }
 
 func (r *tagRepository) DeleteTag(id uint64) error {
-	query := `DELETE FROM tags WHERE id = ?`
-	_, err := r.db.Exec(query, id)
+	query := `UPDATE tags SET deleted_at = ?, is_deleted = ? WHERE id = ?`
+	_, err := r.db.Exec(query, time.Now(), 1, id)
 	return err
 }
 

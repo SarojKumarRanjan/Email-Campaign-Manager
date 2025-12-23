@@ -54,6 +54,7 @@ export type FieldType =
     | "multi-select"
     | "async-select"
     | "editor"
+    | "color"
     | "custom";
 
 export interface FieldConfig<TFieldValues extends FieldValues> {
@@ -332,6 +333,31 @@ function FormRenderer<TFieldValues extends FieldValues>({
                     onChange={field.onChange}
                     disabled={fieldConfig.disabled}
                 />
+            );
+        case "color":
+            return (
+                <div className="flex items-center gap-2">
+                    <div
+                        className="size-9 rounded-md border shadow-sm shrink-0 overflow-hidden relative group"
+                        style={{ backgroundColor: field.value || "#000000" }}
+                    >
+                        <input
+                            type="color"
+                            {...field}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <div className="size-4 bg-white/20 backdrop-blur-sm rounded-full border border-white/40" />
+                        </div>
+                    </div>
+                    <Input
+                        value={field.value || "#000000"}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        placeholder="#000000"
+                        className="font-mono uppercase"
+                        maxLength={7}
+                    />
+                </div>
             );
         case "custom":
             if (fieldConfig.render) {

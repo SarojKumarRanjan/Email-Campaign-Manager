@@ -118,7 +118,7 @@ export default function CreateContact({ open, onClose, contactId }: { open: bool
         ["contactslist"],
         {
             onSuccess: (data) => {
-                console.log(data)
+                
                 form.reset()
                 onClose()
 
