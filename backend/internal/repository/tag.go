@@ -57,9 +57,12 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 }
 
 func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
-	baseQuery := `SELECT id, user_id, name, description, color, created_at, updated_at 
-	              FROM tags 
-	              WHERE user_id = ? AND is_deleted = 0 AND deleted_at IS NULL`
+	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at 
+	              FROM tags as t 
+				  LEFT JOIN contact_tags AS ct
+				  ON t.id = ct.tag_id
+	              WHERE t.user_id = ? AND t.is_deleted = 0 AND t.deleted_at IS NULL
+				  GROUP BY t.id`
 	args := []interface{}{userID}
 
 	// Define allowed filter fields and their database column mappings

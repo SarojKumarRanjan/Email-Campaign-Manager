@@ -2,15 +2,26 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Mail, Edit2, Trash2 } from 'lucide-react';
 
-const TagCard = ({ 
+export interface TagCardProps {
+  id?: number | string;
+  title: string;
+  description?: string;
+  contactCount?: number;
+  campaignCount?: number;
+  color?: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+
+export const TagCard = ({ 
   title = "VIP Customers",
   description = "High-value customers with premium subscriptions",
-  contactCount = 234,
-  campaignCount = 12,
+  contactCount = 0,
+  campaignCount = 0,
   color = "#3B82F6",
   onEdit = () => {},
   onDelete = () => {}
-}) => {
+}: TagCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isEditHovered, setIsEditHovered] = useState(false);
   const [isDeleteHovered, setIsDeleteHovered] = useState(false);
@@ -182,107 +193,3 @@ const TagCard = ({
   );
 };
 
-// Demo component with theme toggle
-const TagCardDemo = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  const tags = [
-    {
-      title: "VIP Customers",
-      description: "High-value customers with premium subscriptions and exclusive benefits",
-      contactCount: 234,
-      campaignCount: 12,
-      color: "#3B82F6"
-    },
-    {
-      title: "Newsletter Subscribers",
-      description: "Active subscribers who engage with weekly content regularly",
-      contactCount: 1847,
-      campaignCount: 28,
-      color: "#10B981"
-    },
-    {
-      title: "Inactive Users",
-      description: "Users who haven't logged in for 90+ days",
-      contactCount: 456,
-      campaignCount: 5,
-      color: "#F59E0B"
-    },
-    {
-      title: "Beta Testers",
-      description: "Early adopters testing new features and providing feedback",
-      contactCount: 89,
-      campaignCount: 3,
-      color: "#8B5CF6"
-    },
-    {
-      title: "Enterprise Clients",
-      description: "Large organizations with custom solutions",
-      contactCount: 42,
-      campaignCount: 8,
-      color: "#EF4444"
-    },
-    {
-      title: "Product Leads",
-      description: "Potential customers interested in specific products",
-      contactCount: 678,
-      campaignCount: 15,
-      color: "#06B6D4"
-    }
-  ];
-
-  return (
-    <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen bg-background transition-colors duration-300 p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header with Theme Toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">Tag Collection</h1>
-              <p className="text-muted-foreground text-lg">
-                Beautiful cards with smooth micro-interactions
-              </p>
-            </div>
-            
-            {/* Theme Toggle Button */}
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className="px-6 py-3 rounded-lg border border-border bg-card text-foreground hover:bg-accent transition-all duration-300 font-medium shadow-sm"
-            >
-              {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
-            </button>
-          </div>
-          
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tags.map((tag, index) => (
-              <div
-                key={index}
-                style={{
-                  animation: `fadeIn 0.5s ease-out ${index * 0.1}s both`
-                }}
-              >
-                <TagCard {...tag} />
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-};
-
-export default TagCardDemo;

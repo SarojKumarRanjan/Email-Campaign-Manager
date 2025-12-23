@@ -6,4 +6,10 @@ export const listSchema = z.object({
     color: z.string().optional(),
 })
 
-export type List = z.infer<typeof listSchema>
+export type List = z.infer<typeof listSchema> & {
+    id: number;
+    user_id: number;
+    contact_count: number;
+    created_at: string;
+    updated_at: string;
+}

@@ -40,7 +40,7 @@ func (h *TagHandler) ListTags(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"page":  filter.Page,
 		"limit": filter.Limit,
-		"tags":  tags,
+		"data":  tags,
 		"total": total,
 	}
 
