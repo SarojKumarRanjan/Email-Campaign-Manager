@@ -70,30 +70,16 @@ func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, http.StatusOK, "Contact retrieved successfully", contact)
 }
 
-func parseIntDefault(val string, def int) int {
-	if v, err := strconv.Atoi(val); err == nil {
-		return v
-	}
-	return def
-}
-
-func defaultString(val, def string) string {
-	if val == "" {
-		return def
-	}
-	return val
-}
-
 func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	var filter types.ContactFilter
 	query := r.URL.Query()
 
-	filter.Page = parseIntDefault(query.Get("page"), 1)
-	filter.Limit = parseIntDefault(query.Get("limit"), 10)
-	filter.SortBy = defaultString(query.Get("sort_by"), "created_at")
-	filter.SortOrder = defaultString(query.Get("sort_order"), "desc")
+	filter.Page = utils.ParseIntDefault(query.Get("page"), 1)
+	filter.Limit = utils.ParseIntDefault(query.Get("limit"), 10)
+	filter.SortBy = utils.DefaultString(query.Get("sort_by"), "created_at")
+	filter.SortOrder = utils.DefaultString(query.Get("sort_order"), "desc")
 	filter.Search = query.Get("search")
-	filter.JoinOperator = defaultString(query.Get("join_operator"), "and")
+	filter.JoinOperator = utils.DefaultString(query.Get("join_operator"), "and")
 
 	filtersJSON := query.Get("filters")
 

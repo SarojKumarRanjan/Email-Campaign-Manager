@@ -128,8 +128,8 @@ func (r *contactRepository) ListContacts(ctx context.Context, filter *types.Cont
 		fb := utils.NewFilterBuilder()
 
 		// Separate tag filters from regular filters
-		regularFilters := []types.Filter{}
-		tagFilters := []types.Filter{}
+		regularFilters := []types.FilterField{}
+		tagFilters := []types.FilterField{}
 
 		for _, f := range filter.Filters {
 			if f.Id == "tags" {

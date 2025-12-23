@@ -5,7 +5,7 @@ import {
   DataTableFilterField,
 } from "../common/data-table";
 import { Button } from "../ui/button";
-import { useDataTableFilters } from "@/hooks/use-datatable-filters";
+import { useFilters } from "@/hooks/usefilters";
 import { ExtendedColumnFilter } from "@/types/data-table";
 import { Badge } from "../ui/badge";
 import { SquarePen, Trash2 } from "lucide-react";
@@ -41,7 +41,7 @@ export default function ContactList() {
     setFilters,
     joinOperator,
     setJoinOperator,
-  } = useDataTableFilters<Contact>({
+  } = useFilters<Contact>({
     defaultSortBy: "email",
     defaultSortOrder: "desc",
   });

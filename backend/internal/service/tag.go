@@ -7,7 +7,7 @@ import (
 )
 
 type TagService interface {
-	ListTags(userID uint64) ([]types.Tag, error)
+	ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error)
 	CreateTag(userID uint64, req *types.CreateTagRequest) (*types.Tag, error)
 	UpdateTag(userID uint64, tagID uint64, req *types.UpdateTagRequest) error
 	DeleteTag(userID uint64, tagID uint64) error
@@ -28,8 +28,8 @@ func NewTagService(repo repository.TagRepository) TagService {
 	return &tagService{repo: repo}
 }
 
-func (s *tagService) ListTags(userID uint64) ([]types.Tag, error) {
-	return s.repo.ListTags(userID)
+func (s *tagService) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
+	return s.repo.ListTags(userID, filter)
 }
 
 func (s *tagService) CreateTag(userID uint64, req *types.CreateTagRequest) (*types.Tag, error) {

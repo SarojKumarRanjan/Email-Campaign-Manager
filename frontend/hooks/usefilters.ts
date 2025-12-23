@@ -16,7 +16,7 @@ interface UseDataTableFiltersOptions<TData> {
     defaultJoinOperator?: "and" | "or";
 }
 
-export function useDataTableFilters<TData = unknown>(
+export function useFilters<TData = unknown>(
     options: UseDataTableFiltersOptions<TData> = {}
 ) {
     const {

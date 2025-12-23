@@ -2,7 +2,7 @@ package types
 
 import "time"
 
-type Filter struct {
+type FilterField struct {
 	FilterId string   `json:"filterId" form:"filterId"`
 	Operator string   `json:"operator" form:"operator"`
 	Id       string   `json:"id" form:"id"`
@@ -11,14 +11,25 @@ type Filter struct {
 }
 
 type ContactFilter struct {
-	UserID       uint64   `json:"-"`
-	Search       string   `json:"search" form:"search"`
-	Page         int      `json:"page" form:"page"`
-	Limit        int      `json:"limit" form:"limit"`
-	SortBy       string   `json:"sort_by" form:"sort_by"`
-	SortOrder    string   `json:"sort_order" form:"sort_order"`
-	JoinOperator string   `json:"join_operator" form:"join_operator"`
-	Filters      []Filter `json:"filters" form:"filters"`
+	UserID       uint64        `json:"-"`
+	Search       string        `json:"search" form:"search"`
+	Page         int           `json:"page" form:"page"`
+	Limit        int           `json:"limit" form:"limit"`
+	SortBy       string        `json:"sort_by" form:"sort_by"`
+	SortOrder    string        `json:"sort_order" form:"sort_order"`
+	JoinOperator string        `json:"join_operator" form:"join_operator"`
+	Filters      []FilterField `json:"filters" form:"filters"`
+}
+
+type Filter struct {
+	UserID       uint64        `json:"-"`
+	Search       string        `json:"search" form:"search"`
+	Page         int           `json:"page" form:"page"`
+	Limit        int           `json:"limit" form:"limit"`
+	SortBy       string        `json:"sort_by" form:"sort_by"`
+	SortOrder    string        `json:"sort_order" form:"sort_order"`
+	JoinOperator string        `json:"join_operator" form:"join_operator"`
+	Filters      []FilterField `json:"filters" form:"filters"`
 }
 
 type CampaignFilter struct {

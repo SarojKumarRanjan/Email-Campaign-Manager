@@ -3,13 +3,14 @@ package repository
 import (
 	"database/sql"
 	"email_campaign/internal/types"
+	"email_campaign/internal/utils"
 	"time"
 )
 
 type TagRepository interface {
 	CreateTag(tag *types.Tag) error
 	GetTag(id uint64) (*types.Tag, error)
-	ListTags(userID uint64) ([]types.Tag, error)
+	ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error)
 	UpdateTag(tag *types.Tag) error
 	DeleteTag(id uint64) error
 	AddContactToTag(tagID, contactID uint64) error
@@ -55,11 +56,52 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 	return &tag, nil
 }
 
-func (r *tagRepository) ListTags(userID uint64) ([]types.Tag, error) {
-	query := `SELECT id, user_id, name, description, color, created_at, updated_at FROM tags WHERE user_id = ?`
-	rows, err := r.db.Query(query, userID)
+func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
+	baseQuery := `SELECT id, user_id, name, description, color, created_at, updated_at 
+	              FROM tags 
+	              WHERE user_id = ? AND is_deleted = 0 AND deleted_at IS NULL`
+	args := []interface{}{userID}
+
+	// Define allowed filter fields and their database column mappings
+	allowedFields := map[string]string{
+		"name":        "name",
+		"description": "description",
+		"color":       "color",
+		"created_at":  "created_at",
+		"updated_at":  "updated_at",
+	}
+
+	// Build dynamic filter conditions
+	if len(filter.Filters) > 0 {
+		fb := utils.NewFilterBuilder()
+		condition, filterArgs, err := fb.BuildFilterConditions(filter.Filters, filter.JoinOperator, allowedFields)
+		if err != nil {
+			return nil, 0, err
+		}
+		if condition != "" {
+			baseQuery += " AND " + condition
+			args = append(args, filterArgs...)
+		}
+	}
+
+	// Use paginator for search, sorting, and pagination
+	paginator := utils.NewPaginator(filter.Page, filter.Limit, filter.SortBy, filter.SortOrder, filter.Search)
+	allowedSortFields := []string{"created_at", "updated_at", "name", "color"}
+	searchFields := []string{"name", "description", "color"}
+
+	// Build count query
+	countQuery, countArgs := paginator.BuildCountQuery(baseQuery, args, searchFields)
+	var total int64
+	err := r.db.QueryRow(countQuery, countArgs...).Scan(&total)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Apply pagination and sorting
+	query, queryArgs := paginator.Apply(baseQuery, args, allowedSortFields, searchFields)
+	rows, err := r.db.Query(query, queryArgs...)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -69,11 +111,11 @@ func (r *tagRepository) ListTags(userID uint64) ([]types.Tag, error) {
 		if err := rows.Scan(
 			&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt,
 		); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		tags = append(tags, tag)
 	}
-	return tags, nil
+	return tags, total, nil
 }
 
 func (r *tagRepository) UpdateTag(tag *types.Tag) error {

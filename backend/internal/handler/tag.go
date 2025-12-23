@@ -22,14 +22,29 @@ func (h *TagHandler) ListTags(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
+	var filter types.Filter
+	query := r.URL.Query()
 
-	tags, err := h.svc.ListTags(userID)
+	filter.Page = utils.ParseIntDefault(query.Get("page"), 1)
+	filter.Limit = utils.ParseIntDefault(query.Get("limit"), 10)
+	filter.SortBy = utils.DefaultString(query.Get("sort_by"), "created_at")
+	filter.SortOrder = utils.DefaultString(query.Get("sort_order"), "desc")
+	filter.Search = query.Get("search")
+
+	tags, total, err := h.svc.ListTags(userID, filter)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.SuccessResponse(w, http.StatusOK, "Tags retrieved successfully", tags)
+	response := map[string]interface{}{
+		"page":  filter.Page,
+		"limit": filter.Limit,
+		"tags":  tags,
+		"total": total,
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Tags retrieved successfully", response)
 }
 
 func (h *TagHandler) CreateTag(w http.ResponseWriter, r *http.Request) {

@@ -3,6 +3,7 @@ package utils
 import (
 	"email_campaign/internal/types"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -18,7 +19,7 @@ func NewFilterBuilder() *FilterBuilder {
 }
 
 // BuildFilterConditions converts frontend filters to SQL WHERE clauses
-func (fb *FilterBuilder) BuildFilterConditions(filters []types.Filter, joinOp string, allowedFields map[string]string) (string, []interface{}, error) {
+func (fb *FilterBuilder) BuildFilterConditions(filters []types.FilterField, joinOp string, allowedFields map[string]string) (string, []interface{}, error) {
 	if len(filters) == 0 {
 		return "", nil, nil
 	}
@@ -51,7 +52,7 @@ func (fb *FilterBuilder) BuildFilterConditions(filters []types.Filter, joinOp st
 	whereClause := "(" + strings.Join(conditions, operator) + ")"
 	return whereClause, fb.args, nil
 }
-func (fb *FilterBuilder) buildSingleFilter(filter types.Filter, dbColumn string) (string, []interface{}, error) {
+func (fb *FilterBuilder) buildSingleFilter(filter types.FilterField, dbColumn string) (string, []interface{}, error) {
 	args := make([]interface{}, 0)
 
 	switch filter.Operator {
@@ -144,4 +145,18 @@ func (fb *FilterBuilder) buildRelativeDateFilter(dbColumn, relativeValue string)
 	}
 	targetDate := time.Now().AddDate(0, 0, days).Format("2006-01-02")
 	return fmt.Sprintf("DATE(%s) = ?", dbColumn), []interface{}{targetDate}, nil
+}
+
+func ParseIntDefault(val string, def int) int {
+	if v, err := strconv.Atoi(val); err == nil {
+		return v
+	}
+	return def
+}
+
+func DefaultString(val, def string) string {
+	if val == "" {
+		return def
+	}
+	return val
 }

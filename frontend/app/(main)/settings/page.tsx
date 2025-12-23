@@ -10,7 +10,7 @@ import {
     useQueryState,
     parseAsBoolean
 } from "nuqs";
-import { useDataTableFilters } from "@/hooks/use-datatable-filters";
+import { useFilters } from "@/hooks/usefilters";
 
 
 interface Contact {
@@ -86,7 +86,7 @@ export default function SettingsPage() {
         setFilters,
         joinOperator,
         setJoinOperator
-    } = useDataTableFilters<Contact>({
+    } = useFilters<Contact>({
         defaultSortBy: "email",
         defaultSortOrder: "asc"
     });
