@@ -14,12 +14,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { useConfigurableMutation } from "@/hooks/useApiCalls";
-import { postAxiosForUseFetch } from "@/lib/axios";
+import { postAxiosForUseFetch,putAxiosForUseFetch } from "@/lib/axios";
 import { useFetch } from "@/hooks/useApiCalls";
 import { getAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
 import { useEffect } from "react";
-
 import { z } from "zod";
 
 type ListFormValues = z.infer<typeof listSchema>;
@@ -55,16 +54,16 @@ export default function CreateList({
 
   const {data : list} = useFetch<List>(
     getAxiosForUseFetch,
-    ["tagList"],
+    ["tagList", listId as string],
     {
       url: { template: API_PATH.TAGS.GET_TAG, variables: [listId as string] },
     },
     {
-      enabled: !!Boolean(listId),
+      enabled: !!listId,
     }
   )
 
-  console.log(list);
+
 
   useEffect(() => {
     if (list) {
@@ -88,7 +87,7 @@ export default function CreateList({
   );
 
   const {mutate : updateList, isPending : updatePending} = useConfigurableMutation(
-    postAxiosForUseFetch,
+    putAxiosForUseFetch,
     ["tagList"],
     {
       onSuccess: () => {
@@ -105,13 +104,14 @@ export default function CreateList({
       color: "",
     },
   });
-  const onSubmit = (data: ListFormValues) => {
-    if (listId) {
+
+  const handleSubmit = (data: ListFormValues) => {
+    if(listId){
       updateList({
         url: { template: API_PATH.TAGS.UPDATE_TAG, variables: [listId as string] },
         data,
       });
-    } else {
+    }else{
       createList({
         url: { template: API_PATH.TAGS.CREATE_TAG },
         data,
@@ -127,14 +127,16 @@ export default function CreateList({
             Create or edit a list to store your contacts.
           </DialogDescription>
         </DialogHeader>
-        <DynamicForm form={form} fields={formFields} onSubmit={onSubmit}>
+        <DynamicForm form={form} fields={formFields} onSubmit={handleSubmit}>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isPending || updatePending}>
+            <Button 
+            type="submit"
+            disabled={isPending || updatePending}>
               {isPending || updatePending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>

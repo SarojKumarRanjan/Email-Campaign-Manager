@@ -31,7 +31,6 @@ export default function ListView() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editListId, setEditListId] = useState<string | undefined>(undefined);
 
-  console.log(editListId);
 
   const {
     page,

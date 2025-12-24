@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, Mail, UserRoundPen, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TruncatedTooltip } from '../common/truncated-tooltip';
 
 export interface TagCardProps {
   id?: number | string;
@@ -68,7 +69,7 @@ export const TagCard = ({
 
         {/* Description */}
         <p className="text-sm text-muted-foreground leading-relaxed ">
-          {description}
+          {<TruncatedTooltip value={description} limit={30} />}
         </p>
 
         {/* Stats */}
