@@ -15,7 +15,7 @@ import API_PATH from "@/lib/apiPath";
 import { deleteAxiosForUseFetch, getAxiosForUseFetch } from "@/lib/axios";
 import { ListResponse } from "@/types";
 import { formatReadableDateSafe } from "@/lib/utils";
-import { Text } from "../common/typography";
+import { Small, Text } from "../common/typography";
 import CreateContact from "./create-contact";
 import PopupConfirm from "../common/popup-confirm";
 import { useState } from "react";
@@ -133,7 +133,7 @@ export default function ContactList() {
       sortable: true,
       filterable: true,
       filterVariant: "text",
-      cell: ({ value }) => <Text>{value}</Text>,
+      cell: ({ value }) => <Small className="font-medium cursor-pointer">{value}</Small>,
       width: 200,
     },
     {

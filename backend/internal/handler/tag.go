@@ -47,6 +47,28 @@ func (h *TagHandler) ListTags(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, http.StatusOK, "Tags retrieved successfully", response)
 }
 
+func (h *TagHandler) GetTag(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	tagIDStr := r.PathValue("id")
+	tagID, err := strconv.ParseUint(tagIDStr, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid tag ID")
+		return
+	}
+
+	tag, err := h.svc.GetTag(userID, tagID)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Tag retrieved successfully", tag)
+}
+
 func (h *TagHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
@@ -98,7 +120,7 @@ func (h *TagHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TagHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -120,7 +142,7 @@ func (h *TagHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TagHandler) GetTagContacts(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -143,7 +165,7 @@ func (h *TagHandler) GetTagContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TagHandler) AddContactToTag(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return

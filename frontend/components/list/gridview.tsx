@@ -1,23 +1,22 @@
-
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { InfiniteScroll } from "@/components/common/infinite-scroll";
 import { TagCard } from "./list-card";
 import { useFilters } from "@/hooks/usefilters";
-import { useFetch } from "@/hooks/useApiCalls";
-import { getAxiosForUseFetch } from "@/lib/axios";
+import { useConfigurableMutation, useFetch } from "@/hooks/useApiCalls";
+import { deleteAxiosForUseFetch, getAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
 import { List } from "@/types/list";
 import { ListResponse } from "@/types";
+import CreateList from "./create-list";
+import PopupConfirm from "../common/popup-confirm";
 
 export default function GridView() {
   const {
     page,
     setPage,
     pageSize,
-    setPageSize,
     sortBy,
     sortOrder,
     filters,
@@ -25,82 +24,136 @@ export default function GridView() {
   } = useFilters<List>({
     defaultSortBy: "name",
     defaultSortOrder: "asc",
-    defaultPageSize: 12, // More items for grid view
+    defaultPageSize: 12,
   });
 
   const [allData, setAllData] = useState<List[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-  // Fetch data using the standardized useFetch hook
-  const { data, isLoading, isPlaceholderData } = useFetch<ListResponse<List>>(
+  // Edit state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editListId, setEditListId] = useState<string | undefined>(undefined);
+
+  // Delete state
+  const [selectforDelete, setSelectforDelete] = useState<string | number | undefined>(undefined);
+  const [openDelete, setOpenDelete] = useState(false);
+
+  // Memoize filters JSON to prevent unnecessary rerenders
+  const filtersJson = useMemo(() => JSON.stringify(filters), [filters]);
+
+  // Fetch data with proper query key
+  const { data, isLoading, isPlaceholderData, error } = useFetch<ListResponse<List>>(
     getAxiosForUseFetch,
-    ["tagslist", page.toString(), pageSize.toString(), sortBy, sortOrder, JSON.stringify(filters), joinOperator],
+    [
+      "tagslist",
+      page.toString(),
+      pageSize.toString(),
+      sortBy,
+      sortOrder,
+      filtersJson,
+      joinOperator,
+    ],
     {
       url: { template: API_PATH.TAGS.LIST_TAGS },
       params: {
         page,
-        limit: pageSize, // Use pageSize from useFilters
+        limit: pageSize,
         sort_by: sortBy,
         sort_order: sortOrder,
-        filters: JSON.stringify(filters),
+        filters: filtersJson,
         join_operator: joinOperator,
       },
-    },
-    {
-       placeholderData: (previousData) => previousData,
     }
   );
 
-  // Handle data appending for infinite scroll
+  // Reset data when filters or sorting change (NOT page change)
   useEffect(() => {
-    if (data?.data) {
-      if (page === 1) {
-        setAllData(data.data);
-      } else {
-        // Append unique items to avoid duplicates if any
-        setAllData((prev) => {
-          const newItems = data.data.filter(
-            (newItem) => !prev.some((oldItem) => oldItem.id === newItem.id)
-          );
-          return [...prev, ...newItems];
-        });
-      }
+    setPage(1);
+    setAllData([]);
+    setHasMore(true);
+  }, [sortBy, sortOrder, filtersJson, joinOperator, pageSize, setPage]);
+
+  const { mutate: deleteTag } = useConfigurableMutation(
+    deleteAxiosForUseFetch,
+    ["tagslist"],
+    {
+      onSuccess: () => {
+        setAllData((prev) => prev.filter((item) => item.id !== selectforDelete));
+        setSelectforDelete(undefined);
+        setOpenDelete(false);
+      },
+    }
+  );
+
+  // Handle data appending
+  useEffect(() => {
+    if (!data?.data) return;
+
+    if (page === 1) {
+      // First page - replace all data
+      setAllData(data.data);
+      setHasMore(data.data.length === pageSize && data.data.length < data.total);
+    } else {
+      // Subsequent pages - append new data
+      setAllData((prev) => {
+        const existingIds = new Set(prev.map((item) => item.id));
+        const newItems = data.data.filter((item) => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
       
-      // Determine if there are more items
-      setHasMore(allData.length + data.data.length < data.total);
+      // Check if there are more pages
+      const totalFetched = (page - 1) * pageSize + data.data.length;
+      setHasMore(data.data.length === pageSize && totalFetched < data.total);
     }
-  }, [data, page]);
+  }, [data, page, pageSize]);
 
-  // Reset data when filters or sorting change
-  useEffect(() => {
-    if (page === 1 && !isLoading) {
-       // This is handled by page === 1 block above, but ensuring reset if filters change
+  // Memoized fetch more callback
+  const fetchMore = useCallback(() => {
+    if (!isLoading && hasMore && !isPlaceholderData) {
+      setPage((prev) => prev + 1);
     }
-  }, [filters, sortBy, sortOrder]);
+  }, [isLoading, hasMore, isPlaceholderData, setPage]);
 
-  const fetchMore = () => {
-    if (!isLoading && hasMore) {
-      setPage(page + 1);
-    }
-  };
+  // Action handlers
+  const handleEdit = useCallback((id: string | number) => {
+    setEditListId(id.toString());
+    setIsEditOpen(true);
+  }, []);
 
-  const handleEdit = (id: string | number) => {
-    console.log("Edit tag:", id);
-    // In the future, this will trigger the CreateList sheet with edit mode
-  };
+  const handleDelete = useCallback((id: string | number) => {
+    setSelectforDelete(id);
+    setOpenDelete(true);
+  }, []);
 
-  const handleDelete = (id: string | number) => {
-    console.log("Delete tag:", id);
-    // In the future, this will trigger the PopupConfirm
-  };
+  // Key extractor for better performance
+  const keyExtractor = useCallback((item: List) => item.id.toString(), []);
+
+  // Error state
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">Failed to load tags</p>
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : "An error occurred"}
+          </p>
+          <button
+            onClick={() => setPage(1)}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full">
       <InfiniteScroll<List>
         data={allData}
         renderItem={(tag) => (
           <TagCard
-            key={tag.id}
             id={tag.id}
             title={tag.name}
             description={tag.description}
@@ -113,14 +166,40 @@ export default function GridView() {
         fetchMore={fetchMore}
         hasMore={hasMore}
         isLoading={isLoading}
-        gridCols={{
-          default: 1,
-          sm: 2,
-          md: 2,
-          lg: 3,
-          xl: 4,
-        }}
+
         className="pb-10"
+        keyExtractor={keyExtractor}
+        emptyStateMessage="No tags found. Create your first tag to get started."
+      />
+
+      {editListId && (
+        <CreateList
+          open={isEditOpen}
+          onClose={() => {
+            setEditListId(undefined);
+            setIsEditOpen(false);
+          }}
+          listId={editListId}
+        />
+      )}
+
+      <PopupConfirm
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        title="Delete Tag"
+        description="Are you sure you want to delete this tag? This action cannot be undone."
+        proceedText="Delete"
+        variant="error"
+        onProceed={() => {
+          if (selectforDelete) {
+            deleteTag({
+              url: {
+                template: API_PATH.TAGS.DELETE_TAG,
+                variables: [selectforDelete.toString()],
+              },
+            });
+          }
+        }}
       />
     </div>
   );

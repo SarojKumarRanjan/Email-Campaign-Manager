@@ -119,7 +119,7 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 func (s *Server) RegisterRoutes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", s.HelloWorldHandler)
+	mux.HandleFunc("GET /{$}", s.HelloWorldHandler)
 	mux.HandleFunc("/health", s.healthHandler)
 
 	// Auth Routes
@@ -233,6 +233,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Tag Routes
 	mux.Handle("GET /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.ListTags)))
+	mux.Handle("GET /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.GetTag)))
 	mux.Handle("POST /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.CreateTag)))
 	mux.Handle("PUT /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.UpdateTag)))
 	mux.Handle("DELETE /api/v1/tags/{id}", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.DeleteTag)))

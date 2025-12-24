@@ -20,6 +20,10 @@ import { getAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
 import { useEffect } from "react";
 
+import { z } from "zod";
+
+type ListFormValues = z.infer<typeof listSchema>;
+
 export default function CreateList({
   onClose,
   open,
@@ -29,7 +33,7 @@ export default function CreateList({
   open: boolean;
   listId?: string;
 }) {
-  const formFields: FieldConfig<List>[] = [
+  const formFields: FieldConfig<ListFormValues>[] = [
     {
       name: "name",
       placeholder: "Enter list name",
@@ -49,20 +53,26 @@ export default function CreateList({
     },
   ];
 
-  const {data : list} = useFetch(
+  const {data : list} = useFetch<List>(
     getAxiosForUseFetch,
     ["tagList"],
     {
       url: { template: API_PATH.TAGS.GET_TAG, variables: [listId as string] },
     },
     {
-      enabled: !!listId,
+      enabled: !!Boolean(listId),
     }
   )
 
+  console.log(list);
+
   useEffect(() => {
     if (list) {
-      form.reset(list);
+      form.reset({
+        name: list.name,
+        description: list.description || "",
+        color: list.color || "",
+      });
     }
   }, [list]);
 
@@ -87,7 +97,7 @@ export default function CreateList({
       },
     }
   );
-  const form = useForm<List>({
+  const form = useForm<ListFormValues>({
     resolver: zodResolver(listSchema),
     defaultValues: {
       name: "",
@@ -95,9 +105,9 @@ export default function CreateList({
       color: "",
     },
   });
-  const onSubmit = (data: List) => {
+  const onSubmit = (data: ListFormValues) => {
     if (listId) {
-     updateList({
+      updateList({
         url: { template: API_PATH.TAGS.UPDATE_TAG, variables: [listId as string] },
         data,
       });

@@ -57,7 +57,7 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 }
 
 func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
-	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at 
+	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count
 	              FROM tags as t 
 				  LEFT JOIN contact_tags AS ct
 				  ON t.id = ct.tag_id
@@ -112,7 +112,7 @@ func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Ta
 	for rows.Next() {
 		var tag types.Tag
 		if err := rows.Scan(
-			&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt,
+			&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt, &tag.ContactCount,
 		); err != nil {
 			return nil, 0, err
 		}

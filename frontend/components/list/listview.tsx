@@ -20,10 +20,18 @@ import { Small, MutedText } from "../common/typography";
 import { List } from "@/types/list";
 import PopupConfirm from "../common/popup-confirm";
 import { useState } from "react";
+import { TruncatedTooltip } from "../common/truncated-tooltip";
+import CreateList from "./create-list";
 
 export default function ListView() {
   const [selectforDelete, setSelectforDelete] = useState<number | undefined>(undefined);
   const [openDelete, setOpenDelete] = useState(false);
+
+  // Edit state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editListId, setEditListId] = useState<string | undefined>(undefined);
+
+  console.log(editListId);
 
   const {
     page,
@@ -41,6 +49,7 @@ export default function ListView() {
   } = useFilters<List>({
     defaultSortBy: "name",
     defaultSortOrder: "asc",
+    defaultPageSize:6
   });
 
   const { data: tagsList, isLoading } = useFetch<ListResponse<List>>(
@@ -71,11 +80,10 @@ export default function ListView() {
       sortable: true,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <div 
-             className="size-3 rounded-full" 
-             style={{ backgroundColor: row.color || "#3B82F6" }} 
-          />
-          <Small className="font-medium">{row.name}</Small>
+          <Small className={`font-medium hover:underline `}>{<TruncatedTooltip value={row.name} limit={20} />}</Small>
+          <div style={{ backgroundColor: row.color || "#3B82F6" }} className={`size-4 rounded-md`}>
+
+          </div>
         </div>
       ),
     },
@@ -106,7 +114,7 @@ export default function ListView() {
       ),
     },
     {
-      accessorKey: "id", // Using id as accessorKey just for the type, id property on the object is used
+      accessorKey: "id", 
       header: "Actions",
       cell: ({ row }) => {
         return (
@@ -114,8 +122,11 @@ export default function ListView() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-primary"
-              onClick={() => console.log("Edit:", row.id)}
+              className="size-8"
+              onClick={() => {
+                setEditListId(row.id.toString());
+                setIsEditOpen(true);
+              }}
             >
               <SquarePen className="h-4 w-4" />
             </Button>
@@ -139,7 +150,7 @@ export default function ListView() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="size-8"
                 onClick={() => {
                   setSelectforDelete(row.id);
                   setOpenDelete(true);
@@ -191,6 +202,17 @@ export default function ListView() {
         }}
         filterFields={filterFields}
       />
+
+      {editListId && (
+        <CreateList
+          open={isEditOpen}
+          onClose={() => {
+            setEditListId(undefined);
+            setIsEditOpen(false);
+          }}
+          listId={editListId}
+        />
+      )}
     </div>
   );
 }

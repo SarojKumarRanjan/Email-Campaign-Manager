@@ -3,6 +3,7 @@
 import * as React from "react";
 import NoDataFound from "./no-data-found";
 import Loading from "./loading";
+import { cn } from "@/lib/utils";
 
 export interface InfiniteScrollProps<T> {
   /** Array of data items to render */
@@ -26,23 +27,17 @@ export interface InfiniteScrollProps<T> {
   /** Custom loader component */
   loader?: React.ReactNode;
   
-  /** Custom end message when no more items */
-  endMessage?: React.ReactNode;
-  
   /** Container className */
   className?: string;
   
   /** Item container className */
   itemClassName?: string;
   
-  /** Grid columns for responsive grid layout (optional) */
-  gridCols?: {
-    default?: number;
-    sm?: number;
-    md?: number;
-    lg?: number;
-    xl?: number;
-  };
+  /** Custom empty state message */
+  emptyStateMessage?: string;
+
+  /** Unique key extractor function */
+  keyExtractor?: (item: T, index: number) => string | number;
 }
 
 export function InfiniteScroll<T>({
@@ -51,97 +46,106 @@ export function InfiniteScroll<T>({
   fetchMore,
   hasMore,
   isLoading = false,
-  threshold = 300,
+  threshold = 400,
   loader,
-  endMessage,
   className = "",
   itemClassName = "",
-  gridCols,
+  emptyStateMessage,
+  keyExtractor = (_, index) => index,
 }: InfiniteScrollProps<T>) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const observerTarget = React.useRef<HTMLDivElement>(null);
-  const [isFetching, setIsFetching] = React.useState(false);
+  const [internalIsFetching, setInternalIsFetching] = React.useState(false);
 
+  const gridClassName = React.useMemo(
+    () => cn(
+      "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      itemClassName
+    ),
+    [itemClassName]
+  );
+
+  // Intersection Observer for infinite scroll
   React.useEffect(() => {
     const currentTarget = observerTarget.current;
-    if (!currentTarget || !hasMore || isLoading || isFetching) return;
+    if (!currentTarget || !hasMore || isLoading || internalIsFetching) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isFetching) {
-          setIsFetching(true);
+        if (entries[0].isIntersecting && hasMore && !isLoading && !internalIsFetching) {
+          setInternalIsFetching(true);
           fetchMore();
-          // Reset fetching state after a delay to prevent multiple rapid calls
-          setTimeout(() => setIsFetching(false), 500);
         }
       },
-      {
-        rootMargin: `${threshold}px`,
-      }
+      { rootMargin: `0px 0px ${threshold}px 0px` }
     );
 
     observer.observe(currentTarget);
-
     return () => {
       if (currentTarget) {
         observer.unobserve(currentTarget);
       }
+      observer.disconnect();
     };
-  }, [hasMore, isLoading, isFetching, fetchMore, threshold]);
+  }, [hasMore, isLoading, internalIsFetching, fetchMore, threshold]);
 
-  // Generate grid class names from gridCols prop
-  const getGridClassName = () => {
-    if (!gridCols) return "";
-    
-    const classes = ["grid gap-4"];
-    
-    if (gridCols.default) classes.push(`grid-cols-${gridCols.default}`);
-    if (gridCols.sm) classes.push(`sm:grid-cols-${gridCols.sm}`);
-    if (gridCols.md) classes.push(`md:grid-cols-${gridCols.md}`);
-    if (gridCols.lg) classes.push(`lg:grid-cols-${gridCols.lg}`);
-    if (gridCols.xl) classes.push(`xl:grid-cols-${gridCols.xl}`);
-    
-    return classes.join(" ");
-  };
+  // Reset fetching state when loading completes
+  React.useEffect(() => {
+    if (!isLoading && internalIsFetching) {
+      const timer = setTimeout(() => setInternalIsFetching(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, internalIsFetching]);
 
-  const defaultLoader = (
-    <div className="flex items-center justify-center py-8">
-      <Loading />
-    </div>
+  const defaultLoader = React.useMemo(
+    () => (
+      <div className="flex items-center justify-center py-8 w-full">
+        <Loading />
+      </div>
+    ),
+    []
   );
 
-  const defaultEndMessage = (
-    <div className="text-center py-8 text-muted-foreground">
-     <NoDataFound />
-    </div>
-  );
+  // Show loading for initial load
+  if (isLoading && data.length === 0) {
+    return (
+      <div ref={containerRef} className={cn("w-full", className)}>
+        {loader || defaultLoader}
+      </div>
+    );
+  }
+
+  // Show empty state
+  if (!isLoading && data.length === 0) {
+    return (
+      <div ref={containerRef} className={cn("w-full", className)}>
+        <div className="text-center py-12 text-muted-foreground w-full">
+          {emptyStateMessage ? (
+            <p>{emptyStateMessage}</p>
+          ) : (
+            <NoDataFound />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={className}>
-      {/* Items Container */}
-      <div className={gridCols ? getGridClassName() : itemClassName}>
+    <div ref={containerRef} className={cn("w-full", className)}>
+      <div className={gridClassName}>
         {data.map((item, index) => (
-          <React.Fragment key={index}>
+          <div key={keyExtractor(item, index)}>
             {renderItem(item, index)}
-          </React.Fragment>
+          </div>
         ))}
       </div>
 
       {/* Loading Indicator */}
-      {isLoading && (loader || defaultLoader)}
+      {isLoading && data.length > 0 && (loader || defaultLoader)}
 
-      {/* Observer Target - invisible element to trigger loading */}
-      {hasMore && !isLoading && (
-        <div ref={observerTarget} className="h-10" />
-      )}
-
-      {/* End Message */}
-      {!hasMore && data.length > 0 && (endMessage || defaultEndMessage)}
-
-      {/* Empty State */}
-      {!isLoading && data.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-         <NoDataFound />
-        </div>
+      {/* Observer Target for triggering next page load */}
+      {hasMore && !isLoading && data.length > 0 && (
+        <div ref={observerTarget} className="h-4 w-full" aria-hidden="true" />
       )}
     </div>
   );
