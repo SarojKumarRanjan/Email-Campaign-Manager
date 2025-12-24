@@ -44,12 +44,12 @@ export function DataTableSkeleton({
                 <div className="flex flex-1 items-center gap-2">
                     {filterCount > 0
                         ? Array.from({ length: filterCount }).map((_, i) => (
-                            <Skeleton key={i} className="h-7 w-18 border-dashed" />
+                            <Skeleton key={i} className="h-8 w-18 border-dashed" />
                         ))
                         : null}
                 </div>
                 {withViewOptions ? (
-                    <Skeleton className="ml-auto hidden h-7 w-18 lg:flex" />
+                    <Skeleton className="ml-auto hidden h-8 w-18 lg:flex" />
                 ) : null}
             </div>
             <div className="rounded-md border">
@@ -65,7 +65,7 @@ export function DataTableSkeleton({
                                             minWidth: shrinkZero ? cozyCellWidths[j] : "auto",
                                         }}
                                     >
-                                        <Skeleton className="h-6 w-full" />
+                                        <Skeleton className="h-8 w-full" />
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -82,7 +82,7 @@ export function DataTableSkeleton({
                                             minWidth: shrinkZero ? cozyCellWidths[j] : "auto",
                                         }}
                                     >
-                                        <Skeleton className="h-6 w-full" />
+                                        <Skeleton className="h-8 w-full" />
                                     </TableCell>
                                 ))}
                             </TableRow>

@@ -57,10 +57,12 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 }
 
 func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
-	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count
+	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count, COUNT(c.campaign_id) as campaign_count
 	              FROM tags as t 
 				  LEFT JOIN contact_tags AS ct
 				  ON t.id = ct.tag_id
+				  LEFT JOIN campaign_tags AS c
+				  ON t.id = c.tag_id
 	              WHERE t.user_id = ? AND t.is_deleted = 0 AND t.deleted_at IS NULL
 				  GROUP BY t.id`
 	args := []interface{}{userID}
@@ -112,7 +114,7 @@ func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Ta
 	for rows.Next() {
 		var tag types.Tag
 		if err := rows.Scan(
-			&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt, &tag.ContactCount,
+			&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt, &tag.ContactCount, &tag.CampaignCount,
 		); err != nil {
 			return nil, 0, err
 		}

@@ -103,6 +103,13 @@ export default function ListView() {
       ),
     },
     {
+      accessorKey: "campaign_count",
+      header: "Campaigns",
+      cell: ({ row }) => (
+        <Badge variant="secondary">{row.campaign_count || 0}</Badge>
+      ),
+    },
+    {
       accessorKey: "created_at",
       header: "Created At",
       sortable: true,

@@ -158,6 +158,7 @@ export default function GridView() {
             title={tag.name}
             description={tag.description}
             contactCount={tag.contact_count}
+            campaignCount={tag.campaign_count}
             color={tag.color}
             onEdit={() => handleEdit(tag.id)}
             onDelete={() => handleDelete(tag.id)}
