@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -70,23 +71,49 @@ func (h *CampaignHandler) ListCampaigns(w http.ResponseWriter, r *http.Request) 
 	}
 
 	filter := types.CampaignFilter{
-		UserID: userID,
-		Search: r.URL.Query().Get("search"),
+		UserID:       userID,
+		Search:       r.URL.Query().Get("search"),
+		SortBy:       r.URL.Query().Get("sort_by"),
+		SortOrder:    r.URL.Query().Get("sort_order"),
+		JoinOperator: r.URL.Query().Get("join_operator"),
 	}
+
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		filter.Page, _ = strconv.Atoi(pageStr)
 	}
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		filter.Limit, _ = strconv.Atoi(limitStr)
 	}
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+	if filter.Limit < 1 {
+		filter.Limit = 10
+	}
 
-	campaigns, err := h.svc.ListCampaigns(&filter)
+	// Parse generic filters from JSON
+	if filtersStr := r.URL.Query().Get("filters"); filtersStr != "" {
+		_ = json.Unmarshal([]byte(filtersStr), &filter.Filters)
+	}
+
+	campaigns, total, err := h.svc.ListCampaigns(&filter)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.SuccessResponse(w, http.StatusOK, "Campaigns retrieved successfully", campaigns)
+	if campaigns == nil {
+		campaigns = []types.CampaignDTO{}
+	}
+
+	response := map[string]interface{}{
+		"data":  campaigns,
+		"page":  filter.Page,
+		"limit": filter.Limit,
+		"total": total,
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Campaigns retrieved successfully", response)
 }
 
 func (h *CampaignHandler) UpdateCampaign(w http.ResponseWriter, r *http.Request) {

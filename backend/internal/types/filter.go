@@ -33,14 +33,18 @@ type Filter struct {
 }
 
 type CampaignFilter struct {
-	UserID    uint64     `json:"-"`
-	Status    []string   `json:"status" form:"status"`
-	TagIDs    []uint64   `json:"tag_ids" form:"tag_ids"`
-	StartDate *time.Time `json:"start_date" form:"start_date"`
-	EndDate   *time.Time `json:"end_date" form:"end_date"`
-	Search    string     `json:"search" form:"search"`
-	Page      int        `json:"page" form:"page"`
-	Limit     int        `json:"limit" form:"limit"`
+	UserID       uint64        `json:"-"`
+	Status       []string      `json:"status" form:"status"`
+	TagIDs       []uint64      `json:"tag_ids" form:"tag_ids"`
+	StartDate    *time.Time    `json:"start_date" form:"start_date"`
+	EndDate      *time.Time    `json:"end_date" form:"end_date"`
+	Search       string        `json:"search" form:"search"`
+	Page         int           `json:"page" form:"page"`
+	Limit        int           `json:"limit" form:"limit"`
+	SortBy       string        `json:"sort_by" form:"sort_by"`
+	SortOrder    string        `json:"sort_order" form:"sort_order"`
+	JoinOperator string        `json:"join_operator" form:"join_operator"`
+	Filters      []FilterField `json:"filters" form:"filters"`
 }
 
 type TemplateFilter struct {

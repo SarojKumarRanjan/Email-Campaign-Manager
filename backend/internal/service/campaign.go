@@ -13,7 +13,7 @@ import (
 type CampaignService interface {
 	CreateCampaign(req *types.CreateCampaignRequest) error
 	GetCampaign(id uint64, userID uint64) (*types.CampaignDTO, error)
-	ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, error)
+	ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error)
 	UpdateCampaign(id uint64, userID uint64, req *types.UpdateCampaignRequest) error
 	DeleteCampaign(id uint64, userID uint64) error
 	DuplicateCampaign(id uint64, userID uint64) error
@@ -46,7 +46,7 @@ func (s *campaignService) GetCampaign(id uint64, userID uint64) (*types.Campaign
 	return s.repo.GetCampaign(id, userID)
 }
 
-func (s *campaignService) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, error) {
+func (s *campaignService) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error) {
 	return s.repo.ListCampaigns(filter)
 }
 

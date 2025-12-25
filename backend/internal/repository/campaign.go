@@ -3,12 +3,13 @@ package repository
 import (
 	"database/sql"
 	"email_campaign/internal/types"
+	"email_campaign/internal/utils"
 )
 
 type CampaignRepository interface {
 	CreateCampaign(campaign *types.CreateCampaignRequest) error
 	GetCampaign(id uint64, userID uint64) (*types.CampaignDTO, error)
-	ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, error)
+	ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error)
 	UpdateCampaign(id uint64, userID uint64, req *types.UpdateCampaignRequest) error
 	DeleteCampaign(id uint64, userID uint64) error
 	DuplicateCampaign(id uint64, userID uint64) error
@@ -73,7 +74,7 @@ func (r *campaignRepository) CreateCampaign(campaign *types.CreateCampaignReques
 func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.CampaignDTO, error) {
 	query := `SELECT id, user_id, template_id, name, subject, from_name, from_email, reply_to_email, status, scheduled_at, started_at, completed_at, 
                      total_recipients, sent_count, delivered_count, failed_count, opened_count, clicked_count, bounced_count, unsubscribed_count, created_at, updated_at
-              FROM campaigns WHERE id = ? AND user_id = ?`
+              FROM campaigns WHERE id = ? AND user_id = ? AND is_deleted = 0`
 
 	var c types.CampaignDTO
 	var templateID sql.NullInt64
@@ -109,41 +110,72 @@ func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.Campa
 	return &c, nil
 }
 
-func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, error) {
-	query := `SELECT id, user_id, template_id, name, subject, from_name, from_email, status, created_at FROM campaigns WHERE user_id = ?`
+func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error) {
+	baseQuery := `SELECT id, user_id, template_id, name, subject, from_name, from_email, status, created_at, total_recipients, sent_count, delivered_count, failed_count, opened_count, clicked_count, bounced_count, unsubscribed_count 
+              FROM campaigns WHERE user_id = ? AND is_deleted = 0 AND deleted_at IS NULL`
 	args := []interface{}{filter.UserID}
 
-	if filter.Search != "" {
-		query += " AND name LIKE ?"
-		args = append(args, "%"+filter.Search+"%")
+	allowedFields := map[string]string{
+		"name":       "name",
+		"subject":    "subject",
+		"status":     "status",
+		"created_at": "created_at",
 	}
+
+	searchFields := []string{"name", "subject"}
+
+	// Apply usage specific filters
 	if len(filter.Status) > 0 {
-		query += " AND status IN ("
+		baseQuery += " AND status IN ("
 		for i, s := range filter.Status {
 			if i > 0 {
-				query += ","
+				baseQuery += ","
 			}
-			query += "?"
+			baseQuery += "?"
 			args = append(args, s)
 		}
-		query += ")"
+		baseQuery += ")"
+	}
+	if filter.StartDate != nil {
+		baseQuery += " AND created_at >= ?"
+		args = append(args, filter.StartDate)
+	}
+	if filter.EndDate != nil {
+		baseQuery += " AND created_at <= ?"
+		args = append(args, filter.EndDate)
 	}
 
-	query += " ORDER BY created_at DESC"
-
-	if filter.Limit > 0 {
-		query += " LIMIT ?"
-		args = append(args, filter.Limit)
-		if filter.Page > 0 {
-			offset := (filter.Page - 1) * filter.Limit
-			query += " OFFSET ?"
-			args = append(args, offset)
+	// Use FilterBuilder for generic filters if needed (example similar to contacts)
+	if len(filter.Filters) > 0 {
+		fb := utils.NewFilterBuilder()
+		condition, filterArgs, err := fb.BuildFilterConditions(filter.Filters, filter.JoinOperator, allowedFields)
+		if err != nil {
+			return nil, 0, err
+		}
+		if condition != "" {
+			baseQuery += " AND " + condition
+			args = append(args, filterArgs...)
 		}
 	}
 
-	rows, err := r.db.Query(query, args...)
+	// Use Paginator
+	paginator := utils.NewPaginator(filter.Page, filter.Limit, filter.SortBy, filter.SortOrder, filter.Search)
+
+	// Count query
+	countQuery, countArgs := paginator.BuildCountQuery(baseQuery, args, searchFields)
+	var total int64
+	err := r.db.QueryRow(countQuery, countArgs...).Scan(&total)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Apply pagination and sorting
+	allowedSortFields := []string{"created_at", "name", "status"}
+	query, queryArgs := paginator.Apply(baseQuery, args, allowedSortFields, searchFields)
+
+	rows, err := r.db.Query(query, queryArgs...)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -151,9 +183,12 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 	for rows.Next() {
 		var c types.CampaignDTO
 		var templateID sql.NullInt64
-		err := rows.Scan(&c.ID, &c.UserID, &templateID, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.Status, &c.CreatedAt)
+		err := rows.Scan(
+			&c.ID, &c.UserID, &templateID, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.Status, &c.CreatedAt,
+			&c.TotalRecipients, &c.SentCount, &c.DeliveredCount, &c.FailedCount, &c.OpenedCount, &c.ClickedCount, &c.BouncedCount, &c.UnsubscribedCount,
+		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if templateID.Valid {
 			tid := uint64(templateID.Int64)
@@ -162,7 +197,7 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 		campaigns = append(campaigns, c)
 	}
 
-	return campaigns, nil
+	return campaigns, total, nil
 }
 
 func (r *campaignRepository) UpdateCampaign(id uint64, userID uint64, req *types.UpdateCampaignRequest) error {
@@ -182,7 +217,7 @@ func (r *campaignRepository) UpdateCampaign(id uint64, userID uint64, req *types
 		args = append(args, req.ScheduledAt, types.CampaignStatusScheduled)
 	}
 
-	query += " WHERE id = ? AND user_id = ?"
+	query += " WHERE id = ? AND user_id = ? AND is_deleted = 0"
 	args = append(args, id, userID)
 
 	_, err := r.db.Exec(query, args...)
@@ -190,7 +225,7 @@ func (r *campaignRepository) UpdateCampaign(id uint64, userID uint64, req *types
 }
 
 func (r *campaignRepository) DeleteCampaign(id uint64, userID uint64) error {
-	res, err := r.db.Exec("DELETE FROM campaigns WHERE id = ? AND user_id = ?", id, userID)
+	res, err := r.db.Exec("UPDATE campaigns SET is_deleted = 1, deleted_at = NOW() WHERE id = ? AND user_id = ?", id, userID)
 	if err != nil {
 		return err
 	}
@@ -231,14 +266,14 @@ func (r *campaignRepository) DuplicateCampaign(id uint64, userID uint64) error {
 }
 
 func (r *campaignRepository) UpdateStatus(id uint64, userID uint64, status string) error {
-	_, err := r.db.Exec("UPDATE campaigns SET status = ?, updated_at = NOW() WHERE id = ? AND user_id = ?", status, id, userID)
+	_, err := r.db.Exec("UPDATE campaigns SET status = ?, updated_at = NOW() WHERE id = ? AND user_id = ? AND is_deleted = 0", status, id, userID)
 	return err
 }
 
 func (r *campaignRepository) GetCampaignRecipients(id uint64, userID uint64, page, limit int) ([]types.CampaignRecipientDTO, error) {
 	// Verify campaign belongs to user
 	var exists int
-	err := r.db.QueryRow("SELECT 1 FROM campaigns WHERE id = ? AND user_id = ?", id, userID).Scan(&exists)
+	err := r.db.QueryRow("SELECT 1 FROM campaigns WHERE id = ? AND user_id = ? AND is_deleted = 0", id, userID).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
