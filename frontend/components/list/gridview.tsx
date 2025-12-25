@@ -11,6 +11,8 @@ import { List } from "@/types/list";
 import { ListResponse } from "@/types";
 import CreateList from "./create-list";
 import PopupConfirm from "../common/popup-confirm";
+import { FullscreenModal } from "../common/fullscreen-modal";
+import { TagDetailView } from "./tag-detail-view";
 
 export default function GridView() {
   const {
@@ -37,6 +39,11 @@ export default function GridView() {
   // Delete state
   const [selectforDelete, setSelectforDelete] = useState<string | number | undefined>(undefined);
   const [openDelete, setOpenDelete] = useState(false);
+
+  // Detail Modal state
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailType, setDetailType] = useState<"contacts" | "campaigns">("contacts");
+  const [selectedTagId, setSelectedTagId] = useState<string | number | undefined>(undefined);
 
   // Memoize filters JSON to prevent unnecessary rerenders
   const filtersJson = useMemo(() => JSON.stringify(filters), [filters]);
@@ -125,6 +132,12 @@ export default function GridView() {
     setOpenDelete(true);
   }, []);
 
+  const handleOpenDetail = useCallback((id: string | number, type: "contacts" | "campaigns") => {
+    setSelectedTagId(id);
+    setDetailType(type);
+    setDetailOpen(true);
+  }, []);
+
   // Key extractor for better performance
   const keyExtractor = useCallback((item: List) => item.id.toString(), []);
 
@@ -162,6 +175,8 @@ export default function GridView() {
             color={tag.color}
             onEdit={() => handleEdit(tag.id)}
             onDelete={() => handleDelete(tag.id)}
+            onViewContacts={() => handleOpenDetail(tag.id, "contacts")}
+            onViewCampaigns={() => handleOpenDetail(tag.id, "campaigns")}
           />
         )}
         fetchMore={fetchMore}
@@ -202,6 +217,16 @@ export default function GridView() {
           }
         }}
       />
+
+      <FullscreenModal
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        side="bottom"
+        height={100}
+        title={detailType === "contacts" ? "Tag Contacts" : "Tag Campaigns"}
+      >
+        <TagDetailView type={detailType} tagId={selectedTagId} />
+      </FullscreenModal>
     </div>
   );
 }

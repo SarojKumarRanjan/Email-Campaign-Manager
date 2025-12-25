@@ -22,6 +22,8 @@ import PopupConfirm from "../common/popup-confirm";
 import { useState } from "react";
 import { TruncatedTooltip } from "../common/truncated-tooltip";
 import CreateList from "./create-list";
+import { FullscreenModal } from "../common/fullscreen-modal";
+import { TagDetailView } from "./tag-detail-view";
 
 export default function ListView() {
   const [selectforDelete, setSelectforDelete] = useState<number | undefined>(undefined);
@@ -30,6 +32,11 @@ export default function ListView() {
   // Edit state
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editListId, setEditListId] = useState<string | undefined>(undefined);
+
+  // Detail Modal state
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailType, setDetailType] = useState<"contacts" | "campaigns">("contacts");
+  const [selectedTagId, setSelectedTagId] = useState<string | number | undefined>(undefined);
 
 
   const {
@@ -99,14 +106,34 @@ export default function ListView() {
       accessorKey: "contact_count",
       header: "Contacts",
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.contact_count || 0}</Badge>
+        <Badge 
+          variant="outline" 
+          className="cursor-pointer hover:bg-primary/80 active:scale-95 transition-all"
+          onClick={() => {
+            setSelectedTagId(row.id);
+            setDetailType("contacts");
+            setDetailOpen(true);
+          }}
+        >
+          {` View  ${row.contact_count || 0}`}
+        </Badge>
       ),
     },
     {
       accessorKey: "campaign_count",
       header: "Campaigns",
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.campaign_count || 0}</Badge>
+        <Badge 
+          variant="outline" 
+          className="cursor-pointer hover:bg-primary/80 active:scale-95 transition-all"
+          onClick={() => {
+            setSelectedTagId(row.id);
+            setDetailType("campaigns");
+            setDetailOpen(true);
+          }}
+        >
+          {` View  ${row.campaign_count || 0}`}
+        </Badge>
       ),
     },
     {
@@ -219,6 +246,16 @@ export default function ListView() {
           listId={editListId}
         />
       )}
+
+      <FullscreenModal
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        side="bottom"
+        height={100}
+        title={detailType === "contacts" ? "Tag Contacts" : "Tag Campaigns"}
+      >
+        <TagDetailView type={detailType} tagId={selectedTagId} />
+      </FullscreenModal>
     </div>
   );
 }

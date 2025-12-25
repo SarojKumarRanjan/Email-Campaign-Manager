@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Users, Mail, UserRoundPen, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TruncatedTooltip } from '../common/truncated-tooltip';
+import { cn } from '@/lib/utils';
 
 export interface TagCardProps {
   id?: number | string;
@@ -13,6 +14,8 @@ export interface TagCardProps {
   color?: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onViewContacts?: () => void;
+  onViewCampaigns?: () => void;
 }
 
 export const TagCard = ({
@@ -22,7 +25,9 @@ export const TagCard = ({
   campaignCount = 0,
   color = "#3B82F6",
   onEdit = () => {},
-  onDelete = () => {}
+  onDelete = () => {},
+  onViewContacts,
+  onViewCampaigns
 }: TagCardProps) => {
   const hexToRgba = (hex: string, opacity: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -75,10 +80,17 @@ export const TagCard = ({
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 pt-2">
           <div
-            className="flex flex-col gap-2 p-3 rounded-lg bg-background/50"
+            className={cn(
+              "flex flex-col gap-2 p-3 rounded-lg bg-background/50 transition-colors",
+              onViewContacts && "cursor-pointer hover:bg-background/80 active:scale-95"
+            )}
             style={{
               transform: 'scale(1.02)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewContacts?.();
             }}
           >
             <div className="flex items-center justify-between">
@@ -100,10 +112,17 @@ export const TagCard = ({
           </div>
 
           <div
-            className="flex flex-col gap-2 p-3 rounded-lg bg-background/50"
+            className={cn(
+              "flex flex-col gap-2 p-3 rounded-lg bg-background/50 transition-colors",
+              onViewCampaigns && "cursor-pointer hover:bg-background/80 active:scale-95"
+            )}
             style={{
               transform: 'scale(1.02)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewCampaigns?.();
             }}
           >
             <div className="flex items-center justify-between">
