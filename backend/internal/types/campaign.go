@@ -6,6 +6,7 @@ type CampaignDTO struct {
 	ID                uint64       `json:"id"`
 	UserID            uint64       `json:"user_id"`
 	TemplateID        *uint64      `json:"template_id"`
+	TemplateName      string       `json:"template_name,omitempty"`
 	Name              string       `json:"name"`
 	Subject           string       `json:"subject"`
 	FromName          string       `json:"from_name"`

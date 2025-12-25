@@ -42,7 +42,7 @@ export default function CampaignDetailsPage() {
         }
     );
 
-    const campaign = campaignResponse?.data;
+    const campaign = campaignResponse;
 
     if (isLoading) {
         return <CampaignDetailsSkeleton />;

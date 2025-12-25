@@ -3,38 +3,34 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  Calendar, 
+  Pencil, 
+  MapPin, 
   Users, 
-  Mail, 
-  BarChart3, 
-  MoreHorizontal, 
-  Clock, 
-  CheckCircle2, 
-  AlertCircle,
-  PauseCircle,
-  XCircle,
-  FileEdit
+  MoreVertical,
+  CalendarDays,
+  UserCircle,
+  MoreVerticalIcon
 } from "lucide-react";
 import { Campaign, CampaignStatus } from "@/types/campaign";
 import { formatReadableDateSafe } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface CampaignCardProps {
   campaign?: Campaign;
   isLoading?: boolean;
 }
 
-const statusConfig: Record<CampaignStatus, { label: string; color: string; icon: any }> = {
-  [CampaignStatus.DRAFT]: { label: "Draft", color: "bg-gray-500/15 text-gray-500 border-gray-500/20", icon: FileEdit },
-  [CampaignStatus.SCHEDULED]: { label: "Scheduled", color: "bg-blue-500/15 text-blue-500 border-blue-500/20", icon: Clock },
-  [CampaignStatus.SENDING]: { label: "Sending", color: "bg-yellow-500/15 text-yellow-500 border-yellow-500/20", icon: Mail },
-  [CampaignStatus.PAUSED]: { label: "Paused", color: "bg-orange-500/15 text-orange-500 border-orange-500/20", icon: PauseCircle },
-  [CampaignStatus.COMPLETED]: { label: "Completed", color: "bg-emerald-500/15 text-emerald-500 border-emerald-500/20", icon: CheckCircle2 },
-  [CampaignStatus.CANCELLED]: { label: "Cancelled", color: "bg-red-500/15 text-red-500 border-red-500/20", icon: XCircle },
+const statusConfig: Record<CampaignStatus, { label: string; color: string; textColor: string }> = {
+  [CampaignStatus.DRAFT]: { label: "Draft", color: "bg-gray-100", textColor: "text-gray-600" },
+  [CampaignStatus.SCHEDULED]: { label: "Scheduled", color: "bg-blue-50", textColor: "text-blue-600" },
+  [CampaignStatus.SENDING]: { label: "Sending", color: "bg-yellow-50", textColor: "text-yellow-600" },
+  [CampaignStatus.PAUSED]: { label: "Paused", color: "bg-orange-50", textColor: "text-orange-600" },
+  [CampaignStatus.COMPLETED]: { label: "Active", color: "bg-emerald-50", textColor: "text-emerald-600" }, // Using "Active" style for completed to match image vibe
+  [CampaignStatus.CANCELLED]: { label: "Cancelled", color: "bg-red-50", textColor: "text-red-600" },
 };
 
 export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps) => {
@@ -42,34 +38,28 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
 
   if (isLoading) {
     return (
-      <Card className="w-full overflow-hidden border border-border/40 bg-card/50">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-24 rounded-full" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-3/4 max-w-[400px]" />
-                <Skeleton className="h-4 w-1/2 max-w-[300px]" />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-8 border-t md:border-t-0 md:border-l border-border/40 pt-4 md:pt-0 md:pl-8 ">
-               <div className="space-y-2">
-                 <Skeleton className="h-4 w-20" />
-                 <Skeleton className="h-8 w-16" />
-               </div>
-               <div className="space-y-2">
-                 <Skeleton className="h-4 w-20" />
-                 <Skeleton className="h-8 w-16" />
-               </div>
-               <div className="space-y-2">
-                 <Skeleton className="h-4 w-20" />
-                 <Skeleton className="h-8 w-16" />
-               </div>
-            </div>
+      <Card className="w-full border shadow-sm">
+        <CardContent className="p-5 space-y-6">
+          <div className="flex justify-between items-start">
+             <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+             </div>
+             <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <div className="grid grid-cols-5 gap-4 py-4 border-t border-b">
+             <Skeleton className="h-10 w-full" />
+             <Skeleton className="h-10 w-full" />
+             <Skeleton className="h-10 w-full" />
+             <Skeleton className="h-10 w-full" />
+             <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="grid grid-cols-5 gap-4">
+             <Skeleton className="h-8 w-20" />
+             <Skeleton className="h-8 w-20" />
+             <Skeleton className="h-8 w-20" />
+             <Skeleton className="h-8 w-20" />
+             <Skeleton className="h-8 w-20" />
           </div>
         </CardContent>
       </Card>
@@ -79,96 +69,151 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
   if (!campaign) return null;
 
   const status = statusConfig[campaign.status] || statusConfig[CampaignStatus.DRAFT];
-  const StatusIcon = status.icon;
-
+  
   const handleCardClick = () => {
       router.push(`/campaigns/${campaign.id}`);
   };
 
+  const getInitials = (name: string) => {
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
   return (
     <Card 
-        className="w-full group relative overflow-hidden border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg cursor-pointer bg-card/50 hover:bg-card"
+        className="w-full border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card group"
         onClick={handleCardClick}
     >
-      {/* Decorative gradient blob */}
-      <div className="absolute top-0 right-0 -mt-16 -mr-16 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
-
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
+      <CardContent className="p-5">
+        {/* Top Header Row */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+              {campaign.name}
+            </h3>
+            <Badge variant="secondary" className={cn("rounded-md px-2 py-0.5 text-xs font-normal border-0", status.color, status.textColor)}>
+              {status.label}
+            </Badge>
+          </div>
           
-          {/* Main Info */}
-          <div className="flex-1 space-y-3 relative z-10">
-            <div className="flex items-center gap-3 flex-wrap">
-              <Badge variant="outline" className={cn("flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border-0 font-medium", status.color)}>
-                <StatusIcon className="w-3.5 h-3.5" />
-                {status.label}
-              </Badge>
-              
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                {campaign.status === CampaignStatus.SCHEDULED 
-                  ? `Scheduled for ${formatReadableDateSafe(campaign.scheduled_at)}`
-                  : `Created ${formatReadableDateSafe(campaign.created_at)}`
-                }
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                {campaign.name}
-              </h3>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                {campaign.subject}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+             <Avatar className="h-8 w-8 bg-blue-600 text-white">
+                <AvatarFallback className="bg-blue-600 text-white text-xs">
+                    {getInitials(campaign.from_name || "User")}
+                </AvatarFallback>
+             </Avatar>
+             <button className="text-muted-foreground hover:text-foreground">
+                <MoreVerticalIcon className="h-4 w-4" />
+             </button>
           </div>
+        </div>
 
-          {/* Stats / Metrics */}
-          <div className="flex items-center gap-2 md:gap-12 md:px-8 border-t md:border-t-0 md:border-l border-border/40 pt-4 md:pt-0">
+        {/* Meta Row (Job Id, Location, Hiring Status) */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
+            <div className="flex items-center gap-1">
+                <UserCircle className="w-4 h-4 text-primary" />
+                <span className="font-medium text-foreground">Campaign Id:</span> 
+                <span>CAMP-{campaign.id}</span>
+            </div>
+            <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="font-medium text-foreground">From:</span> 
+                <span className="truncate max-w-[200px]" title={campaign.from_email}>
+                    {campaign.from_email.split('@')[1] || 'Global'}
+                </span>
+            </div>
+            <div className="flex items-center gap-1">
+                <Users className="w-4 h-4 text-primary" />
+                <span className="font-medium text-foreground">Progress:</span> 
+                <span>{campaign.sent_count} / {campaign.total_recipients} Sent</span>
+            </div>
+        </div>
+
+        {/* Middle Grid (Subject, Template, Dates) */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 py-4 border-t border-b border-border mb-4">
             
-            {/* Recipients */}
-            <div className="flex flex-col gap-1 min-w-[80px]">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" /> Recips
-              </span>
-              <span className="text-2xl font-bold text-foreground tabular-nums">
-                {campaign.total_recipients.toLocaleString()}
-              </span>
+            {/* Subject (Skill Assessment) */}
+            <div className="col-span-2 md:col-span-1">
+                <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
+                    Subject <Pencil className="w-3 h-3 text-primary ml-1" />
+                </div>
+                <div className="text-sm text-muted-foreground truncate" title={campaign.subject}>
+                    {campaign.subject || "-"}
+                </div>
             </div>
 
-            {/* Delivered / Sent */}
-             <div className="flex flex-col gap-1 min-w-[80px]">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5" /> Sent
-              </span>
-              <span className="text-2xl font-bold text-foreground tabular-nums">
-                 {campaign.sent_count.toLocaleString()}
-              </span>
+            {/* Template (Requisition) */}
+            <div className="col-span-1">
+                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
+                    Template
+                </div>
+                <div className="text-sm text-muted-foreground truncate">
+                    {campaign.template_name || (campaign.template_id ? `TMPL-${campaign.template_id}` : "Custom HTML")}
+                </div>
             </div>
 
-             {/* Open Rate (Calculated or from Stats) - Basic calc here */}
-             <div className="flex flex-col gap-1 min-w-[80px]">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" /> Open %
-              </span>
-              <span className="text-2xl font-bold text-foreground tabular-nums">
-                {campaign.sent_count > 0 
-                    ? Math.round((campaign.opened_count / campaign.sent_count) * 100)
-                    : 0
-                }%
-              </span>
+            {/* Schedule (Expiring On) */}
+             <div className="col-span-1">
+                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
+                    Scheduled For <Pencil className="w-3 h-3 text-primary ml-1" />
+                </div>
+                <div className="text-sm text-muted-foreground">
+                    {campaign.scheduled_at ? formatReadableDateSafe(campaign.scheduled_at) : (campaign.status === 'draft' ? 'Not Scheduled' : '-')}
+                </div>
             </div>
 
-          </div>
-
-          {/* Action (Chevron or helper) */}
-           <div className="hidden md:flex items-center justify-center pl-4 text-muted-foreground/50 group-hover:text-primary transition-colors">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                  <MoreHorizontal className="w-5 h-5" />
-              </Button>
-           </div>
+            {/* From Name (Created By) */}
+            <div className="col-span-1">
+                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
+                    Created By <Pencil className="w-3 h-3 text-primary ml-1" />
+                </div>
+                <div className="text-sm text-muted-foreground flex items-center gap-1">
+                     {campaign.from_name} <span className="text-xs text-muted-foreground/50">(1)</span>
+                </div>
+            </div>
+             
+             {/* Created At (Published On) */}
+             <div className="col-span-1">
+                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
+                    Created On
+                </div>
+                <div className="text-sm text-muted-foreground">
+                    {formatReadableDateSafe(campaign.created_at)}
+                </div>
+            </div>
 
         </div>
+
+        {/* Footer Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            
+            <div className="col-span-1">
+                 <div className="text-xs font-semibold text-foreground mb-1">
+                    Sent: <span className="text-muted-foreground font-normal ml-1">{campaign.sent_count}</span>
+                 </div>
+            </div>
+             <div className="col-span-1">
+                 <div className="text-xs font-semibold text-foreground mb-1">
+                    Delivered: <span className="text-muted-foreground font-normal ml-1">{campaign.delivered_count}</span>
+                 </div>
+            </div>
+             <div className="col-span-1">
+                 <div className="text-xs font-semibold text-foreground mb-1">
+                    Opened: <span className="text-muted-foreground font-normal ml-1">{campaign.opened_count}</span>
+                 </div>
+            </div>
+             <div className="col-span-1">
+                 <div className="text-xs font-semibold text-foreground mb-1">
+                    Clicked: <span className="text-muted-foreground font-normal ml-1">{campaign.clicked_count}</span>
+                 </div>
+            </div>
+             <div className="col-span-1">
+                 <div className="text-xs font-semibold text-foreground mb-1">
+                    Bounced: <span className="text-muted-foreground font-normal ml-1">{campaign.bounced_count}</span>
+                 </div>
+            </div>
+
+        </div>
+
       </CardContent>
     </Card>
   );

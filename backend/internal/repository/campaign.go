@@ -72,17 +72,20 @@ func (r *campaignRepository) CreateCampaign(campaign *types.CreateCampaignReques
 }
 
 func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.CampaignDTO, error) {
-	query := `SELECT id, user_id, template_id, name, subject, from_name, from_email, reply_to_email, status, scheduled_at, started_at, completed_at, 
-                     total_recipients, sent_count, delivered_count, failed_count, opened_count, clicked_count, bounced_count, unsubscribed_count, created_at, updated_at
-              FROM campaigns WHERE id = ? AND user_id = ? AND is_deleted = 0`
+	query := `SELECT c.id, c.user_id, c.template_id, t.name as template_name, c.name, c.subject, c.from_name, c.from_email, c.reply_to_email, c.status, c.scheduled_at, c.started_at, c.completed_at, 
+                     c.total_recipients, c.sent_count, c.delivered_count, c.failed_count, c.opened_count, c.clicked_count, c.bounced_count, c.unsubscribed_count, c.created_at, c.updated_at
+              FROM campaigns c
+              LEFT JOIN email_templates t ON c.template_id = t.id
+              WHERE c.id = ? AND c.user_id = ? AND c.is_deleted = 0`
 
 	var c types.CampaignDTO
 	var templateID sql.NullInt64
+	var templateName sql.NullString
 	var scheduledAt, startedAt, completedAt sql.NullTime
 	var replyToEmail sql.NullString
 
 	err := r.db.QueryRow(query, id, userID).Scan(
-		&c.ID, &c.UserID, &templateID, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &replyToEmail, &c.Status,
+		&c.ID, &c.UserID, &templateID, &templateName, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &replyToEmail, &c.Status,
 		&scheduledAt, &startedAt, &completedAt, &c.TotalRecipients, &c.SentCount, &c.DeliveredCount, &c.FailedCount,
 		&c.OpenedCount, &c.ClickedCount, &c.BouncedCount, &c.UnsubscribedCount, &c.CreatedAt, &c.UpdatedAt,
 	)
@@ -93,6 +96,9 @@ func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.Campa
 	if templateID.Valid {
 		tid := uint64(templateID.Int64)
 		c.TemplateID = &tid
+	}
+	if templateName.Valid {
+		c.TemplateName = templateName.String
 	}
 	if scheduledAt.Valid {
 		c.ScheduledAt = &scheduledAt.Time
@@ -111,22 +117,24 @@ func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.Campa
 }
 
 func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error) {
-	baseQuery := `SELECT id, user_id, template_id, name, subject, from_name, from_email, status, created_at, total_recipients, sent_count, delivered_count, failed_count, opened_count, clicked_count, bounced_count, unsubscribed_count 
-              FROM campaigns WHERE user_id = ? AND is_deleted = 0 AND deleted_at IS NULL`
+	baseQuery := `SELECT c.id, c.user_id, c.template_id, t.name as template_name, c.name, c.subject, c.from_name, c.from_email, c.status, c.created_at, c.total_recipients, c.sent_count, c.delivered_count, c.failed_count, c.opened_count, c.clicked_count, c.bounced_count, c.unsubscribed_count 
+              FROM campaigns c
+              LEFT JOIN email_templates t ON c.template_id = t.id
+              WHERE c.user_id = ? AND c.is_deleted = 0 AND c.deleted_at IS NULL`
 	args := []interface{}{filter.UserID}
 
 	allowedFields := map[string]string{
-		"name":       "name",
-		"subject":    "subject",
-		"status":     "status",
-		"created_at": "created_at",
+		"name":       "c.name",
+		"subject":    "c.subject",
+		"status":     "c.status",
+		"created_at": "c.created_at",
 	}
 
-	searchFields := []string{"name", "subject"}
+	searchFields := []string{"c.name", "c.subject"}
 
 	// Apply usage specific filters
 	if len(filter.Status) > 0 {
-		baseQuery += " AND status IN ("
+		baseQuery += " AND c.status IN ("
 		for i, s := range filter.Status {
 			if i > 0 {
 				baseQuery += ","
@@ -137,11 +145,11 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 		baseQuery += ")"
 	}
 	if filter.StartDate != nil {
-		baseQuery += " AND created_at >= ?"
+		baseQuery += " AND c.created_at >= ?"
 		args = append(args, filter.StartDate)
 	}
 	if filter.EndDate != nil {
-		baseQuery += " AND created_at <= ?"
+		baseQuery += " AND c.created_at <= ?"
 		args = append(args, filter.EndDate)
 	}
 
@@ -183,8 +191,9 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 	for rows.Next() {
 		var c types.CampaignDTO
 		var templateID sql.NullInt64
+		var templateName sql.NullString
 		err := rows.Scan(
-			&c.ID, &c.UserID, &templateID, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.Status, &c.CreatedAt,
+			&c.ID, &c.UserID, &templateID, &templateName, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.Status, &c.CreatedAt,
 			&c.TotalRecipients, &c.SentCount, &c.DeliveredCount, &c.FailedCount, &c.OpenedCount, &c.ClickedCount, &c.BouncedCount, &c.UnsubscribedCount,
 		)
 		if err != nil {
@@ -193,6 +202,9 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 		if templateID.Valid {
 			tid := uint64(templateID.Int64)
 			c.TemplateID = &tid
+		}
+		if templateName.Valid {
+			c.TemplateName = templateName.String
 		}
 		campaigns = append(campaigns, c)
 	}

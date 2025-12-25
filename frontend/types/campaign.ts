@@ -11,6 +11,7 @@ export interface Campaign {
     id: number;
     user_id: number;
     template_id?: number;
+    template_name?: string;
     name: string;
     subject: string;
     from_name: string;

@@ -118,7 +118,8 @@ export const CampaignGrid = () => {
                 fetchMore={fetchMore}
                 hasMore={hasMore}
                 isLoading={isLoading}
-                className="pb-10 space-y-4" // Vertical stack for full-width cards
+                gridCols="grid-cols-1"
+                className="pb-10"
                 keyExtractor={keyExtractor}
                 emptyStateMessage="No campaigns found. Create your first campaign to get started."
                 loader={<CampaignCard isLoading={true} />}

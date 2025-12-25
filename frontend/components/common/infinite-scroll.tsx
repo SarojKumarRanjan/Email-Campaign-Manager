@@ -38,6 +38,9 @@ export interface InfiniteScrollProps<T> {
 
   /** Unique key extractor function */
   keyExtractor?: (item: T, index: number) => string | number;
+
+  /** Grid columns configuration (Tailwind class) */
+  gridCols?: string;
 }
 
 export function InfiniteScroll<T>({
@@ -52,6 +55,7 @@ export function InfiniteScroll<T>({
   itemClassName = "",
   emptyStateMessage,
   keyExtractor = (_, index) => index,
+  gridCols,
 }: InfiniteScrollProps<T>) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const observerTarget = React.useRef<HTMLDivElement>(null);
@@ -59,10 +63,11 @@ export function InfiniteScroll<T>({
 
   const gridClassName = React.useMemo(
     () => cn(
-      "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      "grid gap-6",
+      gridCols || "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
       itemClassName
     ),
-    [itemClassName]
+    [itemClassName, gridCols]
   );
 
   // Intersection Observer for infinite scroll
