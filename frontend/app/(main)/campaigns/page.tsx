@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import PageHeader from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List as ListIcon, Plus } from "lucide-react";
+import { LayoutGrid, List as ListIcon, Plus,Calendars  } from "lucide-react";
 import { CampaignGrid } from "@/components/campaign/campaign-grid";
 import CampaignList from "@/components/campaign/campaign-list";
 import { useRouter } from "next/navigation";
@@ -22,23 +22,18 @@ export default function CampaignsPage() {
                      
                         <Button
                             variant={viewMode === "grid" ? "default" : "outline"}
-                            size="sm"
-                            className="h-8 px-2.5"
                             onClick={() => setViewMode("grid")}
                         >
                             <LayoutGrid className="size-5" />
                         </Button>
                         <Button
                             variant={viewMode === "list" ? "default" : "outline"}
-                            size="sm"
-                             className="h-8 px-2.5"
                             onClick={() => setViewMode("list")}
                         >
                             <ListIcon className="size-5" />
                         </Button>
-
                         <Button onClick={() => router.push("/campaigns/new")} className="gap-2">
-                            <Plus className="size-5" />
+                            <Calendars className="size-5" />
                             Create Campaign
                         </Button>
                     </div>

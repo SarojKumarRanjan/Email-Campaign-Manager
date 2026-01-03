@@ -1,0 +1,39 @@
+version: "3"
+
+tasks:
+  backend:
+    desc: Start the backend server
+    dir: backend
+    cmds:
+      - go run cmd/api/main.go
+    sources:
+      - ./**/*.go
+      - .env
+
+  frontend:
+    desc: Start the frontend development server
+    dir: frontend
+    cmds:
+      - pnpm dev
+
+  install:
+    desc: Install dependencies for both backend and frontend
+    cmds:
+      - task: install-backend
+      - task: install-frontend
+
+  install-backend:
+    desc: Install backend dependencies
+    dir: backend
+    cmds:
+      - go mod download
+
+  install-frontend:
+    desc: Install frontend dependencies
+    dir: frontend
+    cmds:
+      - pnpm install
+
+  dev:
+    desc: Start both backend and frontend in development mode
+    deps: [backend, frontend]
