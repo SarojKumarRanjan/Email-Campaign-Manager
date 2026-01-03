@@ -1,3 +1,5 @@
+export * from './list';
+export * from './template';
 
 export interface ListResponse<T> {
     data: T[];

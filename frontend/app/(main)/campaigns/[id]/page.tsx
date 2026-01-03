@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { formatReadableDateSafe } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { CampaignFormModal } from "@/components/campaign/campaign-form-modal";
 
 const statusConfig: Record<CampaignStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
   [CampaignStatus.DRAFT]: { label: "Draft", variant: "secondary", icon: FileEdit },
@@ -33,8 +34,9 @@ export default function CampaignDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
+    const [editModalOpen, setEditModalOpen] = useState(false);
 
-    const { data: campaignResponse, isLoading, error } = useFetch(
+    const { data: campaignResponse, isLoading, error, refetch } = useFetch<Campaign>(
         getAxiosForUseFetch,
         ["campaign", id],
         {
@@ -107,8 +109,7 @@ export default function CampaignDetailsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Placeholder actions - implement actual handlers later */}
-                        <Button variant="outline">Edit</Button>
+                        <Button variant="outline" onClick={() => setEditModalOpen(true)}>Edit</Button>
                         <Button variant="secondary">Send Test</Button>
                     </div>
                 </div>
@@ -211,6 +212,15 @@ export default function CampaignDetailsPage() {
                     </div>
                 </Card>
             </div>
+
+            <CampaignFormModal 
+                open={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                campaignId={parseInt(id)}
+                onSave={() => {
+                    refetch();
+                }}
+            />
         </div>
     );
 }

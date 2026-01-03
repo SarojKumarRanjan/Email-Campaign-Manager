@@ -9,21 +9,26 @@ import {
   MapPin, 
   Users, 
   MoreVertical,
-  CalendarDays,
-  UserCircle,
-  MoreVerticalIcon
 } from "lucide-react";
 import { Campaign, CampaignStatus } from "@/types/campaign";
 import { formatReadableDateSafe } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Heading, MutedText, Small, Large } from "@/components/common/typography";
+import { Heading, MutedText, Small } from "@/components/common/typography";
 import { TruncatedTooltip } from "../common/truncated-tooltip";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface CampaignCardProps {
   campaign?: Campaign;
   isLoading?: boolean;
+  onEdit?: (id: number) => void;
 }
 
 const statusConfig: Record<CampaignStatus, { label: string; color: string; textColor: string }> = {
@@ -35,7 +40,7 @@ const statusConfig: Record<CampaignStatus, { label: string; color: string; textC
   [CampaignStatus.CANCELLED]: { label: "Cancelled", color: "bg-red-50", textColor: "text-red-600" },
 };
 
-export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps) => {
+export const CampaignCard = ({ campaign, isLoading = false, onEdit }: CampaignCardProps) => {
   const router = useRouter();
 
   if (isLoading) {
@@ -76,20 +81,23 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
       router.push(`/campaigns/${campaign.id}`);
   };
 
-  const getInitials = (name: string) => {
-      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const handleEditClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onEdit?.(campaign.id);
   };
+
+
 
   return (
     <Card 
-        className="w-full border bg-card "
+        className="w-full border bg-card hover:shadow-md transition-shadow cursor-pointer"
         onClick={handleCardClick}
     >
       <CardContent className="p-5">
         {/* Top Header Row */}
         <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center cursor-pointer hover:underline gap-3">
-            <Heading level={5} className=" transition-colors">
+          <div className="flex items-center gap-3">
+            <Heading level={5} className="transition-colors hover:underline">
               {campaign.name}
             </Heading>
             <Badge variant="secondary" className={cn("rounded-md px-2 py-0.5 text-xs font-normal border-0", status.color, status.textColor)}>
@@ -97,16 +105,20 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
             </Badge>
           </div>
           
-         {/*  <div className="flex items-center gap-2">
-             <Avatar className="h-8 w-8 bg-blue-600 text-white">
-                <AvatarFallback className="bg-blue-600 text-white text-xs">
-                    {getInitials(campaign.from_name || "User")}
-                </AvatarFallback>
-             </Avatar>
-             <button className="text-muted-foreground hover:text-foreground">
-                <MoreVerticalIcon className="h-4 w-4" />
-             </button>
-          </div> */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                    <MoreVertical className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEditClick}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Campaign
+                </DropdownMenuItem>
+                {/* Future: Add Duplicate, Delete, etc. */}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Meta Row (Job Id, Location, Hiring Status) */}

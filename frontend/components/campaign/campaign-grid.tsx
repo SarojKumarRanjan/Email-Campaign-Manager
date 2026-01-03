@@ -11,10 +11,10 @@ import { Campaign } from "@/types/campaign";
 import { ListResponse } from "@/types";
 
 export interface CampaignGridProps {
-    // Optional: if we want to control filters from outside later
+    onEditCampaign?: (id: number) => void;
 }
 
-export const CampaignGrid = () => {
+export const CampaignGrid = ({ onEditCampaign }: CampaignGridProps) => {
     const {
         page,
         setPage,
@@ -113,7 +113,11 @@ export const CampaignGrid = () => {
             <InfiniteScroll<Campaign>
                 data={allData}
                 renderItem={(campaign) => (
-                    <CampaignCard key={campaign.id} campaign={campaign} />
+                    <CampaignCard 
+                        key={campaign.id} 
+                        campaign={campaign} 
+                        onEdit={onEditCampaign}
+                    />
                 )}
                 fetchMore={fetchMore}
                 hasMore={hasMore}

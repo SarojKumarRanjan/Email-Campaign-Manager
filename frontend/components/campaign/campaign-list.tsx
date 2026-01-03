@@ -27,7 +27,11 @@ const statusConfig: Record<CampaignStatus, { label: string; variant: "default" |
   [CampaignStatus.CANCELLED]: { label: "Cancelled", variant: "destructive", icon: XCircle },
 };
 
-export default function CampaignList() {
+interface CampaignListProps {
+    onEditCampaign?: (id: number) => void;
+}
+
+export default function CampaignList({ onEditCampaign }: CampaignListProps) {
     const router = useRouter();
 
     const {
@@ -129,13 +133,24 @@ export default function CampaignList() {
             accessorKey: "id",
             header: "Actions",
              cell: ({ row }) => (
-                 <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => router.push(`/campaigns/${row.id}`)}
-                >
-                    <Eye className="w-4 h-4" />
-                 </Button>
+                <div className="flex items-center gap-2">
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => router.push(`/campaigns/${row.id}`)}
+                        title="View Details"
+                    >
+                        <Eye className="size-5" />
+                     </Button>
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => onEditCampaign?.(row.id)}
+                        title="Edit Campaign"
+                    >
+                        <FileEdit className="size-5" />
+                     </Button>
+                </div>
              )
         }
     ];

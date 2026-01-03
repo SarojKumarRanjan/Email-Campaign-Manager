@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Settings2,
   ListChevronsDownUp,
+  FileText,
 } from "lucide-react"
 
 import { NavMain } from "@/components/layout/nav-main"
@@ -76,6 +77,13 @@ const data = {
       title: "Lists",
       url: "/lists",
       icon: ListChevronsDownUp,
+      items: [
+      ],
+    },
+    {
+      title: "Templates",
+      url: "/templates",
+      icon: FileText,
       items: [
       ],
     },
