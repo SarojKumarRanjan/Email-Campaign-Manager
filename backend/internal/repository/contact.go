@@ -88,7 +88,7 @@ func (r *contactRepository) CreateContact(contact *types.CreateContactRequest) e
 
 func (r *contactRepository) GetContact(id uint64, userId uint64) (*types.ContactDTO, error) {
 
-	baseQuery := `SELECT id, user_id, email, first_name, last_name, phone, company, is_subscribed, is_bounced, bounce_count, created_at, updated_at, last_contacted_at FROM contacts WHERE id = ? AND user_id = ?`
+	baseQuery := `SELECT id, user_id, email, first_name, last_name,COALESCE(phone, '') as phone,COALESCE(company, '') as company, is_subscribed, is_bounced, bounce_count, created_at, updated_at, last_contacted_at FROM contacts WHERE id = ? AND user_id = ?`
 	//get tags as well
 
 	args := []interface{}{id, userId}

@@ -46,7 +46,7 @@ func (r *tagRepository) CreateTag(tag *types.Tag) error {
 
 func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 	var tag types.Tag
-	query := `SELECT id, user_id, name, description, color, created_at, updated_at FROM tags WHERE id = ? AND is_deleted = 0`
+	query := `SELECT id, user_id, name, COALESCE(description, '') as description, color, created_at, updated_at FROM tags WHERE id = ? AND is_deleted = 0`
 	err := r.db.QueryRow(query, id).Scan(
 		&tag.ID, &tag.UserID, &tag.Name, &tag.Description, &tag.Color, &tag.CreatedAt, &tag.UpdatedAt,
 	)
@@ -57,7 +57,7 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 }
 
 func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
-	baseQuery := `SELECT t.id, t.user_id, t.name, t.description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count, COUNT(c.campaign_id) as campaign_count
+	baseQuery := `SELECT t.id, t.user_id, t.name, COALESCE(t.description, '') as description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count, COUNT(c.campaign_id) as campaign_count
 	              FROM tags as t 
 				  LEFT JOIN contact_tags AS ct
 				  ON t.id = ct.tag_id

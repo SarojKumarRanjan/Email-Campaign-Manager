@@ -46,7 +46,7 @@ export default function CampaignList() {
     } = useFilters<Campaign>({
         defaultSortBy: "created_at",
         defaultSortOrder: "desc",
-        defaultPageSize: 10,
+        defaultPageSize: 5,
     });
 
     const { data, isLoading } = useFetch<ListResponse<Campaign>>(

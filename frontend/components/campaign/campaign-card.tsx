@@ -18,6 +18,8 @@ import { formatReadableDateSafe } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Heading, MutedText, Small, Large } from "@/components/common/typography";
+import { TruncatedTooltip } from "../common/truncated-tooltip";
 
 interface CampaignCardProps {
   campaign?: Campaign;
@@ -29,7 +31,7 @@ const statusConfig: Record<CampaignStatus, { label: string; color: string; textC
   [CampaignStatus.SCHEDULED]: { label: "Scheduled", color: "bg-blue-50", textColor: "text-blue-600" },
   [CampaignStatus.SENDING]: { label: "Sending", color: "bg-yellow-50", textColor: "text-yellow-600" },
   [CampaignStatus.PAUSED]: { label: "Paused", color: "bg-orange-50", textColor: "text-orange-600" },
-  [CampaignStatus.COMPLETED]: { label: "Active", color: "bg-emerald-50", textColor: "text-emerald-600" }, // Using "Active" style for completed to match image vibe
+  [CampaignStatus.COMPLETED]: { label: "Active", color: "bg-emerald-50", textColor: "text-emerald-600" },
   [CampaignStatus.CANCELLED]: { label: "Cancelled", color: "bg-red-50", textColor: "text-red-600" },
 };
 
@@ -80,22 +82,22 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
 
   return (
     <Card 
-        className="w-full border shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-card group"
+        className="w-full border bg-card "
         onClick={handleCardClick}
     >
       <CardContent className="p-5">
         {/* Top Header Row */}
         <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+          <div className="flex items-center cursor-pointer hover:underline gap-3">
+            <Heading level={5} className=" transition-colors">
               {campaign.name}
-            </h3>
+            </Heading>
             <Badge variant="secondary" className={cn("rounded-md px-2 py-0.5 text-xs font-normal border-0", status.color, status.textColor)}>
               {status.label}
             </Badge>
           </div>
           
-          <div className="flex items-center gap-2">
+         {/*  <div className="flex items-center gap-2">
              <Avatar className="h-8 w-8 bg-blue-600 text-white">
                 <AvatarFallback className="bg-blue-600 text-white text-xs">
                     {getInitials(campaign.from_name || "User")}
@@ -104,27 +106,26 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
              <button className="text-muted-foreground hover:text-foreground">
                 <MoreVerticalIcon className="h-4 w-4" />
              </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Meta Row (Job Id, Location, Hiring Status) */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
             <div className="flex items-center gap-1">
-                <UserCircle className="w-4 h-4 text-primary" />
-                <span className="font-medium text-foreground">Campaign Id:</span> 
-                <span>CAMP-{campaign.id}</span>
-            </div>
-            <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4 text-primary" />
-                <span className="font-medium text-foreground">From:</span> 
-                <span className="truncate max-w-[200px]" title={campaign.from_email}>
-                    {campaign.from_email.split('@')[1] || 'Global'}
-                </span>
+                <Small className="text-foreground">From:</Small> 
+                <MutedText asChild>
+                    <span className="truncate max-w-[200px]" title={campaign.from_email}>
+                        {campaign.from_email || 'Global'}
+                    </span>
+                </MutedText>
             </div>
             <div className="flex items-center gap-1">
                 <Users className="w-4 h-4 text-primary" />
-                <span className="font-medium text-foreground">Progress:</span> 
-                <span>{campaign.sent_count} / {campaign.total_recipients} Sent</span>
+                <Small className="text-foreground">Progress:</Small> 
+                <MutedText asChild>
+                    <span>{campaign.sent_count} / {campaign.total_recipients} Sent</span>
+                </MutedText>
             </div>
         </div>
 
@@ -133,52 +134,54 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
             
             {/* Subject (Skill Assessment) */}
             <div className="col-span-2 md:col-span-1">
-                <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
-                    Subject <Pencil className="w-3 h-3 text-primary ml-1" />
+                <div className="flex items-center gap-1 mb-1">
+                    <Small className="text-foreground">Subject</Small>{/*  <Pencil className="w-3 h-3 text-primary ml-1" /> */}
                 </div>
-                <div className="text-sm text-muted-foreground truncate" title={campaign.subject}>
-                    {campaign.subject || "-"}
-                </div>
+                <MutedText>
+                    {<TruncatedTooltip value={campaign.subject || "-"} limit={25} />}
+                </MutedText>
             </div>
 
             {/* Template (Requisition) */}
             <div className="col-span-1">
-                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
-                    Template
+                 <div className="flex items-center gap-1 mb-1">
+                    <Small className="text-foreground">Template</Small>
                 </div>
-                <div className="text-sm text-muted-foreground truncate">
-                    {campaign.template_name || (campaign.template_id ? `TMPL-${campaign.template_id}` : "Custom HTML")}
-                </div>
+                <MutedText title={campaign.template_name || (campaign.template_id ? `TMPL-${campaign.template_id}` : "Custom HTML")}>
+                    {<TruncatedTooltip value={campaign.template_name || (campaign.template_id ? `TMPL-${campaign.template_id}` : "Custom HTML") || "-"} limit={20} />}
+                </MutedText>
             </div>
 
             {/* Schedule (Expiring On) */}
              <div className="col-span-1">
-                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
-                    Scheduled For <Pencil className="w-3 h-3 text-primary ml-1" />
+                 <div className="flex items-center gap-1 mb-1">
+                    <Small className="text-foreground">Scheduled For</Small> {/* <Pencil className="w-3 h-3 text-primary ml-1" /> */}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                    {campaign.scheduled_at ? formatReadableDateSafe(campaign.scheduled_at) : (campaign.status === 'draft' ? 'Not Scheduled' : '-')}
-                </div>
+                <MutedText>
+                    {campaign.scheduled_at ? formatReadableDateSafe(campaign.scheduled_at,true) : (campaign.status === 'draft' ? 'Not Scheduled' : '-')}
+                </MutedText>
             </div>
 
             {/* From Name (Created By) */}
             <div className="col-span-1">
-                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
-                    Created By <Pencil className="w-3 h-3 text-primary ml-1" />
+                 <div className="flex items-center gap-1 mb-1">
+                    <Small className="text-foreground">Created By</Small> {/* <Pencil className="w-3 h-3 text-primary ml-1" /> */}
                 </div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1">
-                     {campaign.from_name} <span className="text-xs text-muted-foreground/50">(1)</span>
+                <div className="flex items-center gap-1">
+                    <MutedText asChild>
+                        <span>{campaign.from_name} <span className="text-xs text-muted-foreground/50">(1)</span></span>
+                    </MutedText>
                 </div>
             </div>
              
              {/* Created At (Published On) */}
              <div className="col-span-1">
-                 <div className="flex items-center gap-1 mb-1 text-xs font-semibold text-foreground">
-                    Created On
+                 <div className="flex items-center gap-1 mb-1">
+                    <Small className="text-foreground">Created On</Small>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <MutedText>
                     {formatReadableDateSafe(campaign.created_at)}
-                </div>
+                </MutedText>
             </div>
 
         </div>
@@ -187,28 +190,43 @@ export const CampaignCard = ({ campaign, isLoading = false }: CampaignCardProps)
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             
             <div className="col-span-1">
-                 <div className="text-xs font-semibold text-foreground mb-1">
-                    Sent: <span className="text-muted-foreground font-normal ml-1">{campaign.sent_count}</span>
+                 <div className="mb-1">
+                    <Small className="text-foreground">Sent:</Small> 
+                    <MutedText asChild className="ml-1">
+                        <span>{campaign.sent_count}</span>
+                    </MutedText>
                  </div>
             </div>
              <div className="col-span-1">
-                 <div className="text-xs font-semibold text-foreground mb-1">
-                    Delivered: <span className="text-muted-foreground font-normal ml-1">{campaign.delivered_count}</span>
+                 <div className="mb-1">
+                    <Small className="text-foreground">Delivered:</Small> 
+                    <MutedText asChild className="ml-1">
+                        <span>{campaign.delivered_count}</span>
+                    </MutedText>
                  </div>
             </div>
              <div className="col-span-1">
-                 <div className="text-xs font-semibold text-foreground mb-1">
-                    Opened: <span className="text-muted-foreground font-normal ml-1">{campaign.opened_count}</span>
+                 <div className="mb-1">
+                    <Small className="text-foreground">Opened:</Small> 
+                    <MutedText asChild className="ml-1">
+                        <span>{campaign.opened_count}</span>
+                    </MutedText>
                  </div>
             </div>
              <div className="col-span-1">
-                 <div className="text-xs font-semibold text-foreground mb-1">
-                    Clicked: <span className="text-muted-foreground font-normal ml-1">{campaign.clicked_count}</span>
+                 <div className="mb-1">
+                    <Small className="text-foreground">Clicked:</Small> 
+                    <MutedText asChild className="ml-1">
+                        <span>{campaign.clicked_count}</span>
+                    </MutedText>
                  </div>
             </div>
              <div className="col-span-1">
-                 <div className="text-xs font-semibold text-foreground mb-1">
-                    Bounced: <span className="text-muted-foreground font-normal ml-1">{campaign.bounced_count}</span>
+                 <div className="mb-1">
+                    <Small className="text-foreground">Bounced:</Small> 
+                    <MutedText asChild className="ml-1">
+                        <span>{campaign.bounced_count}</span>
+                    </MutedText>
                  </div>
             </div>
 

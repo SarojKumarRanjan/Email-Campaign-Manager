@@ -117,7 +117,11 @@ func (r *campaignRepository) GetCampaign(id uint64, userID uint64) (*types.Campa
 }
 
 func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]types.CampaignDTO, int64, error) {
-	baseQuery := `SELECT c.id, c.user_id, c.template_id, t.name as template_name, c.name, c.subject, c.from_name, c.from_email, c.status, c.created_at, c.total_recipients, c.sent_count, c.delivered_count, c.failed_count, c.opened_count, c.clicked_count, c.bounced_count, c.unsubscribed_count 
+	baseQuery := `SELECT c.id, c.user_id, c.template_id, t.name as template_name, c.name, c.subject, c.from_name,c.from_email,
+					COALESCE(c.reply_to_email,c.from_email) as reply_to_email,
+					c.scheduled_at, c.status, c.created_at, c.total_recipients, c.sent_count, 
+					c.delivered_count, c.failed_count, c.opened_count, c.clicked_count, 
+					c.bounced_count, c.unsubscribed_count 
               FROM campaigns c
               LEFT JOIN email_templates t ON c.template_id = t.id
               WHERE c.user_id = ? AND c.is_deleted = 0 AND c.deleted_at IS NULL`
@@ -193,7 +197,7 @@ func (r *campaignRepository) ListCampaigns(filter *types.CampaignFilter) ([]type
 		var templateID sql.NullInt64
 		var templateName sql.NullString
 		err := rows.Scan(
-			&c.ID, &c.UserID, &templateID, &templateName, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.Status, &c.CreatedAt,
+			&c.ID, &c.UserID, &templateID, &templateName, &c.Name, &c.Subject, &c.FromName, &c.FromEmail, &c.ReplyToEmail, &c.ScheduledAt, &c.Status, &c.CreatedAt,
 			&c.TotalRecipients, &c.SentCount, &c.DeliveredCount, &c.FailedCount, &c.OpenedCount, &c.ClickedCount, &c.BouncedCount, &c.UnsubscribedCount,
 		)
 		if err != nil {

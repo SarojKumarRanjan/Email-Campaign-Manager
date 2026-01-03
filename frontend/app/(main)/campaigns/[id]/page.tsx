@@ -6,7 +6,7 @@ import { useFetch } from "@/hooks/useApiCalls";
 import { getAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
 import { Campaign, CampaignStatus } from "@/types/campaign";
-import { Response } from "@/types"; // Use generic Response type wrapper
+import { Response } from "@/types"; 
 import PageHeader from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ const statusConfig: Record<CampaignStatus, { label: string; variant: "default" |
   [CampaignStatus.SCHEDULED]: { label: "Scheduled", variant: "outline", icon: Clock },
   [CampaignStatus.SENDING]: { label: "Sending", variant: "default", icon: Mail },
   [CampaignStatus.PAUSED]: { label: "Paused", variant: "secondary", icon: PauseCircle },
-  [CampaignStatus.COMPLETED]: { label: "Completed", variant: "outline", icon: CheckCircle2 },
+  [CampaignStatus.COMPLETED]: { label: "Completed", variant: "default", icon: CheckCircle2 },
   [CampaignStatus.CANCELLED]: { label: "Cancelled", variant: "destructive", icon: XCircle },
 };
 
@@ -34,7 +34,7 @@ export default function CampaignDetailsPage() {
     const router = useRouter();
     const id = params.id as string;
 
-    const { data: campaignResponse, isLoading, error } = useFetch<Response<Campaign>>(
+    const { data: campaignResponse, isLoading, error } = useFetch(
         getAxiosForUseFetch,
         ["campaign", id],
         {
@@ -68,8 +68,8 @@ export default function CampaignDetailsPage() {
     const bounceRate = campaign.sent_count > 0 ? (campaign.bounced_count / campaign.sent_count) * 100 : 0;
 
     return (
-        <div className="flex flex-1 flex-col gap-8 p-8 max-w-[1600px] mx-auto w-full">
-            <div className="flex flex-col gap-4">
+        <div className="flex flex-1 flex-col gap-4 p-4  mx-auto w-full">
+            <div className="flex flex-col gap-1">
                 <Button 
                     variant="ghost" 
                     className="w-fit p-0 h-auto gap-2 text-muted-foreground hover:text-foreground"
@@ -81,7 +81,7 @@ export default function CampaignDetailsPage() {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1>
+                            <h1 className="text-2xl font-bold tracking-tight">{campaign.name}</h1>
                             <Badge variant={status.variant} className="flex items-center gap-1">
                                 <StatusIcon className="w-3.5 h-3.5" />
                                 {status.label}
@@ -96,7 +96,7 @@ export default function CampaignDetailsPage() {
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="w-3.5 h-3.5" />
                                     {campaign.status === CampaignStatus.SCHEDULED 
-                                        ? `Scheduled: ${formatReadableDateSafe(campaign.scheduled_at)}`
+                                        ? `Scheduled: ${formatReadableDateSafe(campaign.scheduled_at,true)}`
                                         : `Created: ${formatReadableDateSafe(campaign.created_at)}`
                                     }
                                 </div>

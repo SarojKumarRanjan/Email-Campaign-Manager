@@ -4,9 +4,10 @@ import { Button } from "../ui/button";
 import { Heading, Subheading, Text } from "./typography";
 import { Undo2 } from "lucide-react";
 interface PageHeaderProps {
-    title: string;
-    description?: string;
+    title: React.ReactNode;
+    description?: React.ReactNode;
     backButton?: boolean;
+    onBack?: () => void;
     rightNode?: React.ReactNode;
 }
 
@@ -14,6 +15,7 @@ export default function PageHeader({
     title,
     description,
     backButton,
+    onBack,
     rightNode,
 }: PageHeaderProps) {
     return (
@@ -21,15 +23,15 @@ export default function PageHeader({
             <div className="flex items-center  gap-2">
                 {
                     backButton && (
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={onBack}>
                             <Undo2 className="size-8" />
                         </Button>
                     )
                 }
-                <Heading level={3}>{title}</Heading>
+                {typeof title === "string" ? <Heading level={3}>{title}</Heading> : title}
                 {
                     description && (
-                        <Subheading>{description}</Subheading>
+                        typeof description === "string" ? <Subheading>{description}</Subheading> : description
                     )
                 }
             </div>

@@ -60,7 +60,7 @@ export default function ListView() {
 
   const { data: tagsList, isLoading } = useFetch<ListResponse<List>>(
     getAxiosForUseFetch,
-    ["tagslist", page.toString(), pageSize.toString(), sortBy, sortOrder, JSON.stringify(filters), joinOperator],
+    ["tagslist"],
     {
       url: { template: API_PATH.TAGS.LIST_TAGS },
       params: {

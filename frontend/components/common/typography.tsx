@@ -1,13 +1,14 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Slot } from "@radix-ui/react-slot";
 
 // Heading Component
 interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
     level?: 1 | 2 | 3 | 4 | 5 | 6;
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Heading({ level = 1, className, children, ...props }: HeadingProps) {
+export function Heading({ level = 1, className, children, asChild = false, ...props }: HeadingProps) {
     const styles = {
         1: "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl",
         2: "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
@@ -17,90 +18,102 @@ export function Heading({ level = 1, className, children, ...props }: HeadingPro
         6: "scroll-m-20 text-base font-semibold tracking-tight",
     };
 
-    const Component = `h${level}` as const;
-
-    return React.createElement(
-        Component,
-        { className: cn(styles[level], className), ...props },
-        children
+    const Comp = asChild ? Slot : (`h${level}` as const);
+    
+    return (
+        <Comp className={cn(styles[level], className)} {...props}>
+            {children}
+        </Comp>
     );
 }
 
 // Subheading Component
 interface SubheadingProps extends React.HTMLAttributes<HTMLParagraphElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Subheading({ className, children, ...props }: SubheadingProps) {
+export function Subheading({ className, children, asChild = false, ...props }: SubheadingProps) {
+    const Comp = asChild ? Slot : "p";
     return (
-        <p className={cn("text-lg text-muted-foreground", className)} {...props}>
+        <Comp className={cn("text-lg text-muted-foreground", className)} {...props}>
             {children}
-        </p>
+        </Comp>
     );
 }
 
 // Text Component (Normal Text)
 interface TextProps extends React.HTMLAttributes<HTMLParagraphElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Text({ className, children, ...props }: TextProps) {
+export function Text({ className, children, asChild = false, ...props }: TextProps) {
+    const Comp = asChild ? Slot : "p";
     return (
-        <p className={cn("leading-7 not-first:mt-6", className)} {...props}>
+        <Comp className={cn("leading-7 not-first:mt-6", className)} {...props}>
             {children}
-        </p>
+        </Comp>
     );
 }
 
 // Muted Text Component
 interface MutedTextProps extends React.HTMLAttributes<HTMLParagraphElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function MutedText({ className, children, ...props }: MutedTextProps) {
+export function MutedText({ className, children, asChild = false, ...props }: MutedTextProps) {
+    const Comp = asChild ? Slot : "p";
     return (
-        <p className={cn("text-sm text-muted-foreground", className)} {...props}>
+        <Comp className={cn("text-sm text-muted-foreground", className)} {...props}>
             {children}
-        </p>
+        </Comp>
     );
 }
 
 // Lead Text (Larger intro text)
 interface LeadProps extends React.HTMLAttributes<HTMLParagraphElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Lead({ className, children, ...props }: LeadProps) {
+export function Lead({ className, children, asChild = false, ...props }: LeadProps) {
+    const Comp = asChild ? Slot : "p";
     return (
-        <p className={cn("text-xl text-muted-foreground", className)} {...props}>
+        <Comp className={cn("text-xl text-muted-foreground", className)} {...props}>
             {children}
-        </p>
+        </Comp>
     );
 }
 
 // Large Text
 interface LargeProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Large({ className, children, ...props }: LargeProps) {
+export function Large({ className, children, asChild = false, ...props }: LargeProps) {
+    const Comp = asChild ? Slot : "div";
     return (
-        <div className={cn("text-lg font-semibold", className)} {...props}>
+        <Comp className={cn("text-lg font-semibold", className)} {...props}>
             {children}
-        </div>
+        </Comp>
     );
 }
 
 // Small Text
 interface SmallProps extends React.HTMLAttributes<HTMLElement> {
     children: React.ReactNode;
+    asChild?: boolean;
 }
 
-export function Small({ className, children, ...props }: SmallProps) {
+export function Small({ className, children, asChild = false, ...props }: SmallProps) {
+    const Comp = asChild ? Slot : "small";
     return (
-        <small className={cn("text-sm font-medium leading-none", className)} {...props}>
+        <Comp className={cn("text-sm font-medium leading-none", className)} {...props}>
             {children}
-        </small>
+        </Comp>
     );
 }
 

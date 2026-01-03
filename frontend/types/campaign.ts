@@ -31,8 +31,8 @@ export interface Campaign {
     unsubscribed_count: number;
     created_at: string;
     updated_at: string;
-    tags?: any[]; // We can refine this if we import Tag type
-    template?: any; // We can refine this if we import Template type
+    tags?: any[]; 
+    template?: any; 
 }
 
 export interface CampaignStats {
