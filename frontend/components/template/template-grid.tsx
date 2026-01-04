@@ -96,23 +96,22 @@ export const TemplateGrid = ({ onEditTemplate }: TemplateGridProps) => {
         setHasMore(true);
     }, [sortBy, sortOrder, filtersJson, joinOperator, pageSize, setPage]);
 
-    console.log(data);
     // Handle data appending
     useEffect(() => {
-        if (!data) return;
+        if (!data?.data) return;
 
         if (page === 1) {
-            setAllData(data);
+            setAllData(data.data);
         } else {
             setAllData((prev) => {
                 const existingIds = new Set(prev.map((item) => item.id));
-                const newItems = data.filter((item) => !existingIds.has(item.id));
+                const newItems = data.data.filter((item) => !existingIds.has(item.id));
                 return [...prev, ...newItems];
             });
         }
         
-        const totalFetched = (page - 1) * pageSize + data.length;
-        setHasMore(data.length === pageSize && totalFetched < data.total);
+        const totalFetched = (page - 1) * pageSize + data.data.length;
+        setHasMore(data.data.length === pageSize && totalFetched < data.total);
     }, [data, page, pageSize]);
 
     const fetchMore = useCallback(() => {
@@ -163,8 +162,7 @@ export const TemplateGrid = ({ onEditTemplate }: TemplateGridProps) => {
             </div>
         );
     }
-
-    console.log(allData);
+    
 
     return (
         <div className="w-full space-y-4">

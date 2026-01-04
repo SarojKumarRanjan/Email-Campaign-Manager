@@ -64,31 +64,43 @@ func (h *TemplateHandler) GetTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TemplateHandler) ListTemplates(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+
+	filter := types.TemplateFilter{
+		Page:         utils.ParseIntDefault(query.Get("page"), 1),
+		Limit:        utils.ParseIntDefault(query.Get("limit"), 10),
+		SortBy:       utils.DefaultString(query.Get("sort_by"), "created_at"),
+		SortOrder:    utils.DefaultString(query.Get("sort_order"), "desc"),
+		Search:       query.Get("search"),
+		JoinOperator: utils.DefaultString(query.Get("join_operator"), "and"),
+	}
+
+	if isDefaultStr := query.Get("is_default"); isDefaultStr != "" {
+		val := isDefaultStr == "true"
+		filter.IsDefault = &val
+	}
+
 	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
+	filter.UserID = userID
 
-	// Parse filtering params
-	filter := types.TemplateFilter{
-		UserID: userID,
-		Search: r.URL.Query().Get("search"),
-	}
-	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
-		filter.Page, _ = strconv.Atoi(pageStr)
-	}
-	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
-		filter.Limit, _ = strconv.Atoi(limitStr)
-	}
-
-	templates, err := h.svc.ListTemplates(&filter)
+	templates, total, err := h.svc.ListTemplates(&filter)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.SuccessResponse(w, http.StatusOK, "Templates retrieved successfully", templates)
+	response := map[string]interface{}{
+		"data":  templates,
+		"total": total,
+		"page":  filter.Page,
+		"limit": filter.Limit,
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Templates retrieved successfully", response)
 }
 
 func (h *TemplateHandler) UpdateTemplate(w http.ResponseWriter, r *http.Request) {

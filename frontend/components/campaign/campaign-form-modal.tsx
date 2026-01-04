@@ -145,7 +145,8 @@ export function CampaignFormModal({
             const response = await getAxiosForUseFetch(
                 `${API_PATH.TAGS.LIST_TAGS}?search=${inputValue}&limit=50`
             );
-            const tags = response.data?.data || [];
+            const tags = response.data?.data?.data || [];
+            console.log(tags);
             return tags.map((tag: any) => ({
                 value: tag.id.toString(),
                 label: tag.name,
@@ -246,6 +247,7 @@ export function CampaignFormModal({
     const onSubmit = async (data: CampaignFormData) => {
         const payload = {
             ...data,
+            tag_ids: undefined,
             reply_to_email: data.reply_to_email || undefined,
             scheduled_at: data.scheduled_at?.toISOString() || undefined,
         };
@@ -459,13 +461,13 @@ export function CampaignFormModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Campaign Details */}
                             <Card>
-                                <CardHeader className="pb-3">
+                                <CardHeader className="">
                                     <CardTitle className="text-base flex items-center gap-2">
                                         <Mail className="size-4" />
                                         Campaign Details
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
+                                <CardContent className="space-y-1">
                                     <div>
                                         <Small className="text-muted-foreground">Name</Small>
                                         <p className="font-medium">{formValues.name || "-"}</p>
@@ -491,7 +493,7 @@ export function CampaignFormModal({
 
                             {/* Template */}
                             <Card>
-                                <CardHeader className="pb-3">
+                                <CardHeader className="">
                                     <CardTitle className="text-base flex items-center gap-2">
                                         <FileText className="size-4" />
                                         Template
@@ -518,7 +520,7 @@ export function CampaignFormModal({
 
                             {/* Recipients */}
                             <Card>
-                                <CardHeader className="pb-3">
+                                <CardHeader className="">
                                     <CardTitle className="text-base flex items-center gap-2">
                                         <Users className="size-4" />
                                         Recipients
@@ -541,7 +543,7 @@ export function CampaignFormModal({
 
                             {/* Schedule */}
                             <Card>
-                                <CardHeader className="pb-3">
+                                <CardHeader className="">
                                     <CardTitle className="text-base flex items-center gap-2">
                                         <Clock className="size-4" />
                                         Schedule

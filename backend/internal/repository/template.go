@@ -3,12 +3,13 @@ package repository
 import (
 	"database/sql"
 	"email_campaign/internal/types"
+	"email_campaign/internal/utils"
 )
 
 type TemplateRepository interface {
 	CreateTemplate(template *types.CreateTemplateRequest) error
 	GetTemplate(id uint64, userID uint64) (*types.TemplateDTO, error)
-	ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, error)
+	ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, int, error)
 	UpdateTemplate(id uint64, userID uint64, req *types.UpdateTemplateRequest) error
 	DeleteTemplate(id uint64, userID uint64) error
 	DuplicateTemplate(id uint64, userID uint64) error
@@ -50,31 +51,54 @@ func (r *templateRepository) GetTemplate(id uint64, userID uint64) (*types.Templ
 	return &t, nil
 }
 
-func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, error) {
-	query := `SELECT id, user_id, name, subject, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
-              FROM email_templates WHERE user_id = ? AND deleted_at IS NULL AND is_deleted = 0`
+func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, int, error) {
+	baseQuery := `SELECT id, user_id, name, subject, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
+                   FROM email_templates WHERE user_id = ? AND deleted_at IS NULL AND is_deleted = 0`
 	args := []interface{}{filter.UserID}
 
-	if filter.Search != "" {
-		query += " AND name LIKE ?"
-		args = append(args, "%"+filter.Search+"%")
+	allowedFields := map[string]string{
+		"name":       "name",
+		"subject":    "subject",
+		"is_default": "is_default",
+		"created_at": "created_at",
+		"updated_at": "updated_at",
 	}
 
-	query += " ORDER BY created_at DESC"
-	// Simple pagination if needed, for now just list all or limit
-	if filter.Limit > 0 {
-		query += " LIMIT ?"
-		args = append(args, filter.Limit)
-		if filter.Page > 0 {
-			offset := (filter.Page - 1) * filter.Limit
-			query += " OFFSET ?"
-			args = append(args, offset)
+	if len(filter.Filters) > 0 {
+		fb := utils.NewFilterBuilder()
+		condition, filterArgs, err := fb.BuildFilterConditions(filter.Filters, filter.JoinOperator, allowedFields)
+		if err != nil {
+			return nil, 0, err
+		}
+		if condition != "" {
+			baseQuery += " AND " + condition
+			args = append(args, filterArgs...)
 		}
 	}
 
-	rows, err := r.db.Query(query, args...)
+	if filter.IsDefault != nil {
+		baseQuery += " AND is_default = ?"
+		args = append(args, *filter.IsDefault)
+	}
+
+	paginator := utils.NewPaginator(filter.Page, filter.Limit, filter.SortBy, filter.SortOrder, filter.Search)
+	allowedSortFields := []string{"name", "subject", "created_at", "updated_at"}
+	searchFields := []string{"name", "subject"}
+
+	// Build count query
+	countQuery, countArgs := paginator.BuildCountQuery(baseQuery, args, searchFields)
+	var total int
+	err := r.db.QueryRow(countQuery, countArgs...).Scan(&total)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Apply pagination and sorting
+	query, queryArgs := paginator.Apply(baseQuery, args, allowedSortFields, searchFields)
+
+	rows, err := r.db.Query(query, queryArgs...)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -87,13 +111,13 @@ func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]type
 			&t.IsDefault, &t.CreatedAt, &t.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		t.ThumbnailURL = thumbnailURL.String
 		t.TextContent = textContent.String
 		templates = append(templates, t)
 	}
-	return templates, nil
+	return templates, total, nil
 }
 
 func (r *templateRepository) UpdateTemplate(id uint64, userID uint64, req *types.UpdateTemplateRequest) error {

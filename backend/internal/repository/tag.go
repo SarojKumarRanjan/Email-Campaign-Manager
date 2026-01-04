@@ -57,23 +57,21 @@ func (r *tagRepository) GetTag(id uint64) (*types.Tag, error) {
 }
 
 func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Tag, int64, error) {
-	baseQuery := `SELECT t.id, t.user_id, t.name, COALESCE(t.description, '') as description, t.color, t.created_at, t.updated_at, COUNT(ct.contact_id) as contact_count, COUNT(c.campaign_id) as campaign_count
+	// Use subqueries for counts to avoid GROUP BY issues with ONLY_FULL_GROUP_BY and paginator
+	baseQuery := `SELECT t.id, t.user_id, t.name, COALESCE(t.description, '') as description, t.color, t.created_at, t.updated_at,
+	              (SELECT COUNT(*) FROM contact_tags ct WHERE ct.tag_id = t.id) as contact_count,
+	              (SELECT COUNT(*) FROM campaign_tags c WHERE c.tag_id = t.id) as campaign_count
 	              FROM tags as t 
-				  LEFT JOIN contact_tags AS ct
-				  ON t.id = ct.tag_id
-				  LEFT JOIN campaign_tags AS c
-				  ON t.id = c.tag_id
-	              WHERE t.user_id = ? AND t.is_deleted = 0 AND t.deleted_at IS NULL
-				  GROUP BY t.id`
+	              WHERE t.user_id = ? AND t.is_deleted = 0 AND t.deleted_at IS NULL`
 	args := []interface{}{userID}
 
 	// Define allowed filter fields and their database column mappings
 	allowedFields := map[string]string{
-		"name":        "name",
-		"description": "description",
-		"color":       "color",
-		"created_at":  "created_at",
-		"updated_at":  "updated_at",
+		"name":        "t.name",
+		"description": "t.description",
+		"color":       "t.color",
+		"created_at":  "t.created_at",
+		"updated_at":  "t.updated_at",
 	}
 
 	// Build dynamic filter conditions
@@ -91,8 +89,8 @@ func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Ta
 
 	// Use paginator for search, sorting, and pagination
 	paginator := utils.NewPaginator(filter.Page, filter.Limit, filter.SortBy, filter.SortOrder, filter.Search)
-	allowedSortFields := []string{"created_at", "updated_at", "name", "color"}
-	searchFields := []string{"name", "description", "color"}
+	allowedSortFields := []string{"t.name", "t.color", "t.created_at", "t.updated_at"}
+	searchFields := []string{"t.name", "t.description", "t.color"}
 
 	// Build count query
 	countQuery, countArgs := paginator.BuildCountQuery(baseQuery, args, searchFields)
@@ -104,6 +102,7 @@ func (r *tagRepository) ListTags(userID uint64, filter types.Filter) ([]types.Ta
 
 	// Apply pagination and sorting
 	query, queryArgs := paginator.Apply(baseQuery, args, allowedSortFields, searchFields)
+
 	rows, err := r.db.Query(query, queryArgs...)
 	if err != nil {
 		return nil, 0, err

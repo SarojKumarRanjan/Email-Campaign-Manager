@@ -16,7 +16,7 @@ import (
 type TemplateService interface {
 	CreateTemplate(req *types.CreateTemplateRequest) error
 	GetTemplate(id uint64, userID uint64) (*types.TemplateDTO, error)
-	ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, error)
+	ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, int, error)
 	UpdateTemplate(id uint64, userID uint64, req *types.UpdateTemplateRequest) error
 	DeleteTemplate(id uint64, userID uint64) error
 	DuplicateTemplate(id uint64, userID uint64) error
@@ -41,7 +41,7 @@ func (s *templateService) GetTemplate(id uint64, userID uint64) (*types.Template
 	return s.repo.GetTemplate(id, userID)
 }
 
-func (s *templateService) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, error) {
+func (s *templateService) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, int, error) {
 	return s.repo.ListTemplates(filter)
 }
 
