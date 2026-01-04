@@ -90,7 +90,7 @@ export const CampaignCard = ({ campaign, isLoading = false, onEdit }: CampaignCa
 
   return (
     <Card 
-        className="w-full border bg-card hover:shadow-md transition-shadow cursor-pointer"
+        className="w-full border bg-card  cursor-pointer"
         onClick={handleCardClick}
     >
       <CardContent className="p-5">

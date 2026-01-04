@@ -19,6 +19,7 @@ import { Small, Text } from "../common/typography";
 import CreateContact from "./create-contact";
 import PopupConfirm from "../common/popup-confirm";
 import { useState } from "react";
+import { TruncatedTooltip } from "../common/truncated-tooltip";
 
 export default function ContactList() {
   const [selectedContactId, setSelectedContactId] = useState<
@@ -133,7 +134,7 @@ export default function ContactList() {
       sortable: true,
       filterable: true,
       filterVariant: "text",
-      cell: ({ value }) => <Small className="font-medium cursor-pointer">{value}</Small>,
+      cell: ({ value }) => <Small className="cursor-pointer">{<TruncatedTooltip value={value} limit={30} />}</Small>,
       width: 200,
     },
     {
@@ -229,6 +230,13 @@ export default function ContactList() {
         toolbar="simple"
         loading={isLoading}
         serverMode={true}
+        selection={{
+          enabled: true,
+          selectedRows: selectedContactId ? [selectedContactId] : [],
+          onSelectionChange: (selectedRows) => {
+            console.log(selectedRows);
+          },
+        }}
         // Pagination
         pagination={{
           page: page,

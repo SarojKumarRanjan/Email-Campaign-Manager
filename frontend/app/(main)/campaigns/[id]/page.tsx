@@ -70,15 +70,25 @@ export default function CampaignDetailsPage() {
     const bounceRate = campaign.sent_count > 0 ? (campaign.bounced_count / campaign.sent_count) * 100 : 0;
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4  mx-auto w-full">
-            <div className="flex flex-col gap-1">
-                <Button 
-                    variant="ghost" 
-                    className="w-fit p-0 h-auto gap-2 text-muted-foreground hover:text-foreground"
+        <div className="flex flex-1 flex-col gap-4 p-4 mx-auto w-full">
+            <PageHeader
+                title={
+                    <Button 
+                    variant="ghost"
                     onClick={() => router.push("/campaigns")}
                 >
                     <ArrowLeft className="w-4 h-4" /> Back to Campaigns
                 </Button>
+                }
+                rightNode={
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => setEditModalOpen(true)}>Edit</Button>
+                        <Button variant="secondary">Send Test</Button>
+                    </div>
+                }
+            />
+            <div className="flex flex-col gap-1">
+                
 
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="space-y-2">
@@ -106,11 +116,6 @@ export default function CampaignDetailsPage() {
                                 <div>From: {campaign.from_name} &lt;{campaign.from_email}&gt;</div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => setEditModalOpen(true)}>Edit</Button>
-                        <Button variant="secondary">Send Test</Button>
                     </div>
                 </div>
             </div>

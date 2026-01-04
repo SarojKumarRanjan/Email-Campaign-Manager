@@ -52,7 +52,7 @@ func (r *templateRepository) GetTemplate(id uint64, userID uint64) (*types.Templ
 
 func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, error) {
 	query := `SELECT id, user_id, name, subject, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
-              FROM email_templates WHERE user_id = ?`
+              FROM email_templates WHERE user_id = ? AND deleted_at IS NULL AND is_deleted = 0`
 	args := []interface{}{filter.UserID}
 
 	if filter.Search != "" {
@@ -129,7 +129,7 @@ func (r *templateRepository) UpdateTemplate(id uint64, userID uint64, req *types
 }
 
 func (r *templateRepository) DeleteTemplate(id uint64, userID uint64) error {
-	res, err := r.db.Exec("DELETE FROM email_templates WHERE id = ? AND user_id = ?", id, userID)
+	res, err := r.db.Exec("UPDATE email_templates SET deleted_at = NOW(), is_deleted = 1 WHERE id = ? AND user_id = ?", id, userID)
 	if err != nil {
 		return err
 	}

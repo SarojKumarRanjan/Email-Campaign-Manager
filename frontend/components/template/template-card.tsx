@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,18 +73,18 @@ export const TemplateCard = ({
 
     return (
         <Card 
-            className="w-full border bg-card hover:shadow-md transition-shadow cursor-pointer"
+            className="w-full border bg-card  cursor-pointer"
             onClick={handleCardClick}
         >
-            <CardContent className="p-5">
+            <CardContent className="p-2 py-0">
                 {/* Header Row */}
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex justify-between items-start mb-1">
                     <div className="flex items-center gap-2">
                         <Heading level={5} className="transition-colors">
                             <TruncatedTooltip value={template.name} limit={30} />
                         </Heading>
                         {template.is_default && (
-                            <Badge variant="secondary" className="gap-1 text-xs">
+                            <Badge variant="secondary"  className="gap-1 bg-green-500 text-white text-xs">
                                 <Star className="size-3 fill-current" />
                                 Default
                             </Badge>
@@ -126,7 +125,7 @@ export const TemplateCard = ({
                 </div>
 
                 {/* Subject */}
-                <div className="mb-4">
+                <div className="mb-2">
                     <div className="flex items-center gap-1 mb-1">
                         <Small className="text-foreground">Subject:</Small>
                     </div>
@@ -137,7 +136,7 @@ export const TemplateCard = ({
 
                 {/* Preview Thumbnail */}
                 <div className="aspect-video bg-muted/50 rounded-md border border-border mb-4 flex items-center justify-center overflow-hidden">
-                    {template.thumbnail_url ? (
+                    {template?.thumbnail_url ? (
                         <img 
                             src={template.thumbnail_url} 
                             alt={template.name}

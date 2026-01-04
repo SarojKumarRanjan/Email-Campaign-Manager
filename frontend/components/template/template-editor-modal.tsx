@@ -154,7 +154,7 @@ export function TemplateEditorModal({
         const payload = {
             ...data,
             html_content: htmlContent,
-            mjml_content: mjmlContent,
+            /* mjml_content: mjmlContent, */
         };
 
         if (isEditMode && templateId) {
