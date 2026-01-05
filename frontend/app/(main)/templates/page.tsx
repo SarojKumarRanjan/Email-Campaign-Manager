@@ -5,6 +5,7 @@ import PageHeader from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List as ListIcon, Plus, FileText } from "lucide-react";
 import { TemplateGrid } from "@/components/template/template-grid";
+import { TemplateList } from "@/components/template/template-list";
 import { TemplateEditorModal } from "@/components/template/template-editor-modal";
 
 export default function TemplatesPage() {
@@ -35,18 +36,22 @@ export default function TemplatesPage() {
                     <div className="flex items-center gap-3">
                         <Button
                             variant={viewMode === "grid" ? "default" : "outline"}
+                            size="icon"
                             onClick={() => setViewMode("grid")}
+                            title="Grid View"
                         >
                             <LayoutGrid className="size-5" />
                         </Button>
                         <Button
                             variant={viewMode === "list" ? "default" : "outline"}
+                            size="icon"
                             onClick={() => setViewMode("list")}
+                            title="List View"
                         >
                             <ListIcon className="size-5" />
                         </Button>
-                        <Button onClick={handleCreateTemplate} className="gap-2">
-                            <FileText className="size-5" />
+                        <Button onClick={handleCreateTemplate} className="gap-2 ml-2">
+                            <Plus className="size-5" />
                             Create Template
                         </Button>
                     </div>
@@ -54,7 +59,11 @@ export default function TemplatesPage() {
             />
 
             <div className="w-full mt-4">
-                <TemplateGrid onEditTemplate={handleEditTemplate} />
+                {viewMode === "grid" ? (
+                    <TemplateGrid onEditTemplate={handleEditTemplate} />
+                ) : (
+                    <TemplateList onEditTemplate={handleEditTemplate} />
+                )}
             </div>
 
             <TemplateEditorModal

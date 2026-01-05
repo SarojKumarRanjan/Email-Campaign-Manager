@@ -50,7 +50,7 @@ export default function CampaignList({ onEditCampaign }: CampaignListProps) {
     } = useFilters<Campaign>({
         defaultSortBy: "created_at",
         defaultSortOrder: "desc",
-        defaultPageSize: 5,
+        defaultPageSize: 6,
     });
 
     const { data, isLoading } = useFetch<ListResponse<Campaign>>(
@@ -184,6 +184,7 @@ export default function CampaignList({ onEditCampaign }: CampaignListProps) {
                 }
             }}
              filtering={{
+                enabled: true,
                 filters,
                 onFilterChange: setFilters,
                 joinOperator,

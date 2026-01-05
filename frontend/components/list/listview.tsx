@@ -55,7 +55,7 @@ export default function ListView() {
   } = useFilters<List>({
     defaultSortBy: "name",
     defaultSortOrder: "asc",
-    defaultPageSize:6
+    defaultPageSize:8
   });
 
   const { data: tagsList, isLoading } = useFetch<ListResponse<List>>(
@@ -228,6 +228,7 @@ export default function ListView() {
           },
         }}
         filtering={{
+          enabled: false,
           filters: filters,
           onFilterChange: (newFilters) => setFilters(newFilters),
           joinOperator: joinOperator,

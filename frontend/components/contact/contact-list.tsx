@@ -45,6 +45,7 @@ export default function ContactList() {
   } = useFilters<Contact>({
     defaultSortBy: "email",
     defaultSortOrder: "desc",
+    defaultPageSize:6
   });
 
   const { data: contactsList, isLoading } = useFetch<ListResponse<Contact>>(
@@ -253,6 +254,7 @@ export default function ContactList() {
         }}
         // Filtering
         filtering={{
+          enabled: true,
           filters: filters,
           onFilterChange: handleFilterChange,
           joinOperator: joinOperator as "and" | "or",

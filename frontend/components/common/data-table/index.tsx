@@ -119,6 +119,7 @@ export interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivEleme
     };
 
     filtering?: {
+        enabled: boolean;
         filters: ExtendedColumnFilter<TData>[];
         onFilterChange: (filters: ExtendedColumnFilter<TData>[]) => void;
         joinOperator?: "and" | "or";
@@ -411,7 +412,8 @@ export function DataTable<TData>({
     return (
         <div className={cn("w-full space-y-4", className)} {...props}>
             {/* Toolbar Wrapper with Switcher */}
-            <div className="flex items-center justify-between">
+            {
+              filtering?.enabled &&  <div className="flex items-center justify-between">
                 <div className="flex-1">
                     {toolbarMode === "advanced" ? (
                         <DataTableAdvancedToolbar table={table}>
@@ -473,7 +475,7 @@ export function DataTable<TData>({
 
                 {/* Mode Switcher */}
 
-            </div>
+            </div>}
 
             <div className="rounded-md border overflow-hidden">
                 {loading ? (
@@ -557,7 +559,7 @@ export function DataTable<TData>({
                 )}
             </div>
 
-            {!loading && <DataTablePagination table={table} />}
+            {!loading && <DataTablePagination showSelection={selection?.enabled} table={table} />}
 
             {/* Floating Bar for Bulk Actions */}
             {(selection?.enabled && selection.selectedRows.length > 0 && bulkActions) ? (

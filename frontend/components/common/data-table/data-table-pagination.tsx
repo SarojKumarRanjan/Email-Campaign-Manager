@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 interface DataTablePaginationProps<TData> extends React.ComponentProps<"div"> {
     table: Table<TData>;
+    showSelection?: boolean;
     pageSizeOptions?: number[];
 }
 
@@ -25,20 +26,21 @@ export function DataTablePagination<TData>({
     table,
     pageSizeOptions = [5,6,7,8,9,10, 20, 30, 40, 50],
     className,
+    showSelection,
     ...props
 }: DataTablePaginationProps<TData>) {
     return (
         <div
             className={cn(
-                "flex w-full flex-col-reverse items-center justify-between gap-4 overflow-auto p-1 sm:flex-row sm:gap-8",
+                `flex w-full flex-col-reverse items-center ${showSelection ? "justify-between" : "justify-end"} gap-4 overflow-auto p-1 sm:flex-row sm:gap-8`,
                 className,
             )}
             {...props}
         >
-            <div className="flex-1 whitespace-nowrap text-muted-foreground text-sm">
+            {showSelection && <div className="flex-1 whitespace-nowrap text-muted-foreground text-sm">
                 {table.getFilteredSelectedRowModel().rows.length} of{" "}
                 {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
+            </div>}
             <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
                 <div className="flex items-center space-x-2">
                     <p className="whitespace-nowrap font-medium text-sm">Rows per page</p>

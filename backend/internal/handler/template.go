@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -73,6 +74,14 @@ func (h *TemplateHandler) ListTemplates(w http.ResponseWriter, r *http.Request) 
 		SortOrder:    utils.DefaultString(query.Get("sort_order"), "desc"),
 		Search:       query.Get("search"),
 		JoinOperator: utils.DefaultString(query.Get("join_operator"), "and"),
+	}
+
+	filtersJSON := query.Get("filters")
+	if filtersJSON != "" {
+		if err := json.Unmarshal([]byte(filtersJSON), &filter.Filters); err != nil {
+			utils.ErrorResponse(w, http.StatusBadRequest, "Invalid filters format")
+			return
+		}
 	}
 
 	if isDefaultStr := query.Get("is_default"); isDefaultStr != "" {
