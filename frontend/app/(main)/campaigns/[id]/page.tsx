@@ -17,9 +17,11 @@ import {
     PauseCircle, XCircle, Clock, FileEdit, ArrowLeft,
     BarChart3, MousePointerClick, Ban, Percent
 } from "lucide-react";
-import { formatReadableDateSafe } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { formatReadableDateSafe } from "@/lib/utils";
 import { CampaignFormModal } from "@/components/campaign/campaign-form-modal";
+import { AnalyticsBarChart } from "@/components/campaign/analytics/AnalyticsBarChart";
+import { DeliveryPieChart } from "@/components/campaign/analytics/DeliveryPieChart";
 
 const statusConfig: Record<CampaignStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
   [CampaignStatus.DRAFT]: { label: "Draft", variant: "secondary", icon: FileEdit },
@@ -173,50 +175,39 @@ export default function CampaignDetailsPage() {
                 </Card>
             </div>
 
-            {/* Detailed Metrics */}
-            <div className="grid gap-8 md:grid-cols-2">
-                <Card className="h-full">
+
+
+
+                <div className="grid gap-4 md:grid-cols-2">
+
+                     <Card>
                     <CardHeader>
-                        <CardTitle>Delivery Performance</CardTitle>
+                        <CardTitle>Campaign Performance Overview</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                             <div className="flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                <span>Delivered</span>
-                             </div>
-                             <span className="font-semibold">{campaign.delivered_count.toLocaleString()}</span>
-                        </div>
-                         <Separator />
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4 text-yellow-500" />
-                                <span>Failed</span>
-                            </div>
-                            <span className="font-semibold">{campaign.failed_count.toLocaleString()}</span>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Ban className="w-4 h-4 text-red-500" />
-                                <span>Bounced</span>
-                            </div>
-                            <div className="text-right">
-                                <div className="font-semibold">{campaign.bounced_count.toLocaleString()}</div>
-                                <div className="text-xs text-muted-foreground">{bounceRate.toFixed(1)}% bounce rate</div>
-                            </div>
-                        </div>
+                    <CardContent>
+                        <AnalyticsBarChart 
+                            sent={campaign.sent_count}
+                            delivered={campaign.delivered_count}
+                            opened={campaign.opened_count}
+                            clicked={campaign.clicked_count}
+                            bounced={campaign.bounced_count}
+                        />
                     </CardContent>
                 </Card>
-
-                 {/* Here we could add a preview or more stats */}
-                 <Card className="h-full flex items-center justify-center bg-muted/20 border-dashed">
-                    <div className="text-center p-6">
-                        <p className="text-muted-foreground">Recipient Activity Chart / Timeline Placeholder</p>
-                        <Button variant="link">View Detailed Reports</Button>
-                    </div>
-                </Card>
-            </div>
+                    <Card className="h-full">
+                        <CardHeader>
+                            <CardTitle>Delivery Distribution</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <DeliveryPieChart 
+                                delivered={campaign.delivered_count}
+                                bounced={campaign.bounced_count}
+                                failed={campaign.failed_count}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+          
 
             <CampaignFormModal 
                 open={editModalOpen}

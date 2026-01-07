@@ -33,6 +33,16 @@ export interface Campaign {
     updated_at: string;
     tags?: any[]; 
     template?: any; 
+    timeline?: CampaignTimelinePoint[];
+}
+
+export interface CampaignTimelinePoint {
+    date: string;
+    sent_count: number;
+    delivered_count: number;
+    opened_count: number;
+    clicked_count: number;
+    bounced_count: number;
 }
 
 export interface CampaignStats {
