@@ -88,7 +88,7 @@ export function TemplateSelector({
             </div>
 
             {/* Templates Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-1">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto p-1">
                 {isLoading ? (
                     <>
                         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -122,7 +122,7 @@ export function TemplateSelector({
                                 key={template.id}
                                 className={cn(
                                     "cursor-pointer transition-all hover:shadow-md",
-                                    isSelected && "ring-2 ring-primary border-primary"
+                                    isSelected && "ring-1 ring-primary border-primary"
                                 )}
                                 onClick={() => handleSelect(template)}
                             >

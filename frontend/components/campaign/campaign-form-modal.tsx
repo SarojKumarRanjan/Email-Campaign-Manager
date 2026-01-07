@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
     ArrowLeft, 
     ArrowRight, 
@@ -598,38 +597,9 @@ export function CampaignFormModal({
             title={isEditMode ? "Edit Campaign" : "Create Campaign"}
             height={100}
             side="bottom"
-        >
-            <div className="flex flex-col h-full">
-                {/* Step Indicator */}
-                <div className="shrink-0 px-6 py-4 border-b bg-background">
-                    <CampaignStepIndicator
-                        steps={campaignSteps}
-                        currentStep={currentStep}
-                        onStepClick={handleStepClick}
-                    />
-                </div>
-
-                {/* Step Content */}
-                <ScrollArea className="flex-1">
-                    <div className="p-6">
-                        {isLoadingCampaign && isEditMode ? (
-                            <div className="space-y-4 max-w-2xl mx-auto">
-                                <Skeleton className="h-8 w-48" />
-                                <Skeleton className="h-4 w-64" />
-                                <div className="space-y-4 mt-6">
-                                    <Skeleton className="h-10 w-full" />
-                                    <Skeleton className="h-10 w-full" />
-                                    <Skeleton className="h-10 w-full" />
-                                </div>
-                            </div>
-                        ) : (
-                            renderStepContent()
-                        )}
-                    </div>
-                </ScrollArea>
-
-                {/* Footer Actions */}
-                <div className="shrink-0 flex items-center justify-end gap-4 px-6 py-4 border-t bg-background">
+            scrollable={false}
+            footer={
+                <div className="flex items-center justify-end gap-4 px-6 py-4">
                     <Button
                         type="button"
                         variant="outline"
@@ -666,6 +636,36 @@ export function CampaignFormModal({
                                 Next
                                 <ArrowRight className="size-5" />
                             </Button>
+                        )}
+                    </div>
+                </div>
+            }
+        >
+            <div className="flex flex-col h-full min-h-0">
+                {/* Step Indicator */}
+                <div className="shrink-0 px-6 py-4 border-b bg-background">
+                    <CampaignStepIndicator
+                        steps={campaignSteps}
+                        currentStep={currentStep}
+                        onStepClick={handleStepClick}
+                    />
+                </div>
+
+                {/* Step Content */}
+                <div className="flex-1 overflow-y-auto">
+                    <div className="p-6">
+                        {isLoadingCampaign && isEditMode ? (
+                            <div className="space-y-4 max-w-2xl mx-auto">
+                                <Skeleton className="h-8 w-48" />
+                                <Skeleton className="h-4 w-64" />
+                                <div className="space-y-4 mt-6">
+                                    <Skeleton className="h-10 w-full" />
+                                    <Skeleton className="h-10 w-full" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                        ) : (
+                            renderStepContent()
                         )}
                     </div>
                 </div>

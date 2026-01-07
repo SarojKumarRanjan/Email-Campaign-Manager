@@ -12,6 +12,8 @@ interface FullscreenModalProps {
   onClose: () => void;
   children: React.ReactNode;
   className?: string;
+  footer?: React.ReactNode;
+  scrollable?: boolean;
 }
 
 /**
@@ -26,6 +28,8 @@ export const FullscreenModal = ({
   onClose,
   children,
   className,
+  footer,
+  scrollable = true,
 }: FullscreenModalProps) => {
   const isHorizontal = side === "left" || side === "right";
   
@@ -48,9 +52,17 @@ export const FullscreenModal = ({
             <SheetTitle className="text-xl font-bold">{title}</SheetTitle>
           </SheetHeader>
         )}
-        <div className="flex-1 overflow-y-auto w-full h-full p-2">
+        <div className={cn(
+          "flex-1 w-full min-h-0",
+          scrollable ? "overflow-y-auto p-2" : "flex flex-col overflow-hidden"
+        )}>
           {children}
         </div>
+        {footer && (
+          <div className="shrink-0 border-t bg-background">
+            {footer}
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

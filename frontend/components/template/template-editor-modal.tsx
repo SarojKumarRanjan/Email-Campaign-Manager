@@ -183,8 +183,34 @@ export function TemplateEditorModal({
             title={isEditMode ? "Edit Template" : "Create Template"}
             height={100}
             side="bottom"
+            scrollable={false}
+            footer={
+                <div className="flex items-center justify-end gap-3 px-6 py-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleClose}
+                        disabled={isSaving}
+                    >
+                        <X className="size-5" />
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="template-form"
+                        disabled={isSaving || isLoadingTemplate}
+                    >
+                        {isSaving ? (
+                            <Loader2 className="size-4 mr-2 animate-spin" />
+                        ) : (
+                            <Save className="size-5" />
+                        )}
+                        {isEditMode ? "Update Template" : "Save Template"}
+                    </Button>
+                </div>
+            }
         >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full min-h-0">
                 {/* Header Form */}
                 <div className="shrink-0 border-b bg-background">
                     <form 
@@ -239,7 +265,6 @@ export function TemplateEditorModal({
                         )}
                     </form>
                 </div>
-
                 {/* MJML Editor */}
                 <div className="flex-1 min-h-0">
                     <MjmlEditor
@@ -247,31 +272,6 @@ export function TemplateEditorModal({
                         onChange={setMjmlContent}
                         disabled={isLoadingTemplate}
                     />
-                </div>
-
-                {/* Footer Actions */}
-                <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t bg-background">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleClose}
-                        disabled={isSaving}
-                    >
-                        <X className="size-5" />
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        form="template-form"
-                        disabled={isSaving || isLoadingTemplate}
-                    >
-                        {isSaving ? (
-                            <Loader2 className="size-4 mr-2 animate-spin" />
-                        ) : (
-                            <Save className="size-5" />
-                        )}
-                        {isEditMode ? "Update Template" : "Save Template"}
-                    </Button>
                 </div>
             </div>
         </FullscreenModal>
