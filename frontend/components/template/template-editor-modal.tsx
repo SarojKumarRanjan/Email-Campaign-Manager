@@ -6,12 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { FullscreenModal } from "@/components/common/fullscreen-modal";
 import { MjmlEditor, defaultMjmlTemplate } from "./mjml-editor";
+import { HtmlEditor, defaultHtmlTemplate } from "./html-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Save, X, Loader2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Save, X, Loader2, Code2, Layout } from "lucide-react";
 import { useFetch, useConfigurableMutation } from "@/hooks/useApiCalls";
 import { getAxiosForUseFetch, postAxiosForUseFetch, putAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
@@ -21,6 +23,7 @@ import { cn } from "@/lib/utils";
 const templateSchema = z.object({
     name: z.string().min(1, "Template name is required"),
     subject: z.string().min(1, "Subject is required"),
+    type: z.enum(["mjml", "html"]),
     is_default: z.boolean().optional(),
 });
 
@@ -41,7 +44,8 @@ export function TemplateEditorModal({
 }: TemplateEditorModalProps) {
     const isEditMode = !!templateId;
     const [mjmlContent, setMjmlContent] = useState(defaultMjmlTemplate);
-    const [htmlContent, setHtmlContent] = useState("");
+    const [htmlContent, setHtmlContent] = useState(defaultHtmlTemplate);
+    const [renderedHtml, setRenderedHtml] = useState("");
 
     const {
         register,
@@ -55,9 +59,12 @@ export function TemplateEditorModal({
         defaultValues: {
             name: "",
             subject: "",
+            type: "mjml",
             is_default: false,
         },
     });
+
+    const activeType = watch("type");
 
     // Fetch existing template if editing
     const { data: existingTemplate, isLoading: isLoadingTemplate } = useFetch<Template>(
@@ -104,14 +111,15 @@ export function TemplateEditorModal({
             reset({
                 name: existingTemplate.name,
                 subject: existingTemplate.subject,
+                type: existingTemplate.type || "mjml",
                 is_default: existingTemplate.is_default,
             });
-            // Load MJML content or fall back to HTML
-            if (existingTemplate.mjml_content) {
-                setMjmlContent(existingTemplate.mjml_content);
-            } else if (existingTemplate.html_content) {
-                // If only HTML is available, wrap it in basic MJML structure
-                setMjmlContent(existingTemplate.html_content);
+            // Load content based on type
+            if (existingTemplate.type === "mjml") {
+                setMjmlContent(existingTemplate.mjml_content || defaultMjmlTemplate);
+                setRenderedHtml(existingTemplate.html_content);
+            } else {
+                setHtmlContent(existingTemplate.html_content || defaultHtmlTemplate);
             }
         }
     }, [existingTemplate, isEditMode, reset]);
@@ -122,39 +130,45 @@ export function TemplateEditorModal({
             reset({
                 name: "",
                 subject: "",
+                type: "mjml",
                 is_default: false,
             });
             setMjmlContent(defaultMjmlTemplate);
-            setHtmlContent("");
+            setHtmlContent(defaultHtmlTemplate);
+            setRenderedHtml("");
         }
     }, [open, isEditMode, reset]);
 
     // Convert MJML to HTML for saving
     useEffect(() => {
+        if (activeType !== "mjml") return;
+
         const convertMjml = async () => {
             try {
                 const mjmlBrowser = await import("mjml-browser");
                 const result = mjmlBrowser.default(mjmlContent, { validationLevel: "soft" });
-                setHtmlContent(result.html || "");
+                setRenderedHtml(result.html || "");
             } catch (err) {
                 console.error("Failed to convert MJML:", err);
             }
         };
-        convertMjml();
-    }, [mjmlContent]);
+        const timer = setTimeout(convertMjml, 500);
+        return () => clearTimeout(timer);
+    }, [mjmlContent, activeType]);
 
     const handleClose = () => {
         reset();
         setMjmlContent(defaultMjmlTemplate);
-        setHtmlContent("");
+        setHtmlContent(defaultHtmlTemplate);
+        setRenderedHtml("");
         onClose();
     };
 
     const onSubmit = async (data: TemplateFormData) => {
-        const payload = {
+        const payload: any = {
             ...data,
-            html_content: htmlContent,
-            /* mjml_content: mjmlContent, */
+            html_content: data.type === "mjml" ? renderedHtml : htmlContent,
+            mjml_content: data.type === "mjml" ? mjmlContent : "",
         };
 
         if (isEditMode && templateId) {
@@ -265,13 +279,40 @@ export function TemplateEditorModal({
                         )}
                     </form>
                 </div>
-                {/* MJML Editor */}
+                {/* Editor Toggle */}
+                <div className="shrink-0 border-b bg-muted/20 px-6 py-2">
+                    <Tabs 
+                        value={activeType} 
+                        onValueChange={(v) => setValue("type", v as "mjml" | "html", { shouldDirty: true })}
+                    >
+                        <TabsList className="grid w-[400px] grid-cols-2">
+                            <TabsTrigger value="mjml" className="gap-2">
+                                <Layout className="size-4" />
+                                MJML Builder
+                            </TabsTrigger>
+                            <TabsTrigger value="html" className="gap-2">
+                                <Code2 className="size-4" />
+                                HTML Editor
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+
+                {/* Editor Content */}
                 <div className="flex-1 min-h-0">
-                    <MjmlEditor
-                        value={mjmlContent}
-                        onChange={setMjmlContent}
-                        disabled={isLoadingTemplate}
-                    />
+                    {activeType === "mjml" ? (
+                        <MjmlEditor
+                            value={mjmlContent}
+                            onChange={setMjmlContent}
+                            disabled={isLoadingTemplate}
+                        />
+                    ) : (
+                        <HtmlEditor
+                            value={htmlContent}
+                            onChange={setHtmlContent}
+                            disabled={isLoadingTemplate}
+                        />
+                    )}
                 </div>
             </div>
         </FullscreenModal>

@@ -3,6 +3,7 @@ export interface Template {
     user_id: number;
     name: string;
     subject: string;
+    type: 'mjml' | 'html';
     html_content: string;
     mjml_content?: string;
     text_content?: string;
@@ -15,6 +16,7 @@ export interface Template {
 export interface CreateTemplateRequest {
     name: string;
     subject: string;
+    type: 'mjml' | 'html';
     html_content: string;
     mjml_content?: string;
     text_content?: string;
@@ -24,6 +26,7 @@ export interface CreateTemplateRequest {
 export interface UpdateTemplateRequest {
     name?: string;
     subject?: string;
+    type?: 'mjml' | 'html';
     html_content?: string;
     mjml_content?: string;
     text_content?: string;

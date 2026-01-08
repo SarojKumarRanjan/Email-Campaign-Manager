@@ -25,22 +25,22 @@ func NewTemplateRepository(db *sql.DB) TemplateRepository {
 }
 
 func (r *templateRepository) CreateTemplate(template *types.CreateTemplateRequest) error {
-	query := `INSERT INTO email_templates (user_id, name, subject, html_content, text_content, is_default, created_at, updated_at) 
-              VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`
+	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, is_default, created_at, updated_at) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
 
-	_, err := r.db.Exec(query, template.UserID, template.Name, template.Subject, template.HTMLContent, template.TextContent, template.IsDefault)
+	_, err := r.db.Exec(query, template.UserID, template.Name, template.Subject, template.Type, template.MJMLContent, template.HTMLContent, template.TextContent, template.IsDefault)
 	return err
 }
 
 func (r *templateRepository) GetTemplate(id uint64, userID uint64) (*types.TemplateDTO, error) {
-	query := `SELECT id, user_id, name, subject, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
+	query := `SELECT id, user_id, name, subject, type, mjml_content, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
               FROM email_templates WHERE id = ? AND user_id = ?`
 
 	var t types.TemplateDTO
-	var thumbnailURL, textContent sql.NullString // Handle nullable fields
+	var thumbnailURL, textContent, mjmlContent sql.NullString // Handle nullable fields
 
 	err := r.db.QueryRow(query, id, userID).Scan(
-		&t.ID, &t.UserID, &t.Name, &t.Subject, &t.HTMLContent, &textContent, &thumbnailURL,
+		&t.ID, &t.UserID, &t.Name, &t.Subject, &t.Type, &mjmlContent, &t.HTMLContent, &textContent, &thumbnailURL,
 		&t.IsDefault, &t.CreatedAt, &t.UpdatedAt,
 	)
 	if err != nil {
@@ -48,17 +48,19 @@ func (r *templateRepository) GetTemplate(id uint64, userID uint64) (*types.Templ
 	}
 	t.ThumbnailURL = thumbnailURL.String
 	t.TextContent = textContent.String
+	t.MJMLContent = mjmlContent.String
 	return &t, nil
 }
 
 func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]types.TemplateDTO, int, error) {
-	baseQuery := `SELECT id, user_id, name, subject, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
+	baseQuery := `SELECT id, user_id, name, subject, type, mjml_content, html_content, text_content, thumbnail_url, is_default, created_at, updated_at 
                    FROM email_templates WHERE user_id = ? AND deleted_at IS NULL AND is_deleted = 0`
 	args := []interface{}{filter.UserID}
 
 	allowedFields := map[string]string{
 		"name":       "name",
 		"subject":    "subject",
+		"type":       "type",
 		"is_default": "is_default",
 		"created_at": "created_at",
 		"updated_at": "updated_at",
@@ -105,9 +107,9 @@ func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]type
 	var templates []types.TemplateDTO
 	for rows.Next() {
 		var t types.TemplateDTO
-		var thumbnailURL, textContent sql.NullString
+		var thumbnailURL, textContent, mjmlContent sql.NullString
 		err := rows.Scan(
-			&t.ID, &t.UserID, &t.Name, &t.Subject, &t.HTMLContent, &textContent, &thumbnailURL,
+			&t.ID, &t.UserID, &t.Name, &t.Subject, &t.Type, &mjmlContent, &t.HTMLContent, &textContent, &thumbnailURL,
 			&t.IsDefault, &t.CreatedAt, &t.UpdatedAt,
 		)
 		if err != nil {
@@ -115,6 +117,7 @@ func (r *templateRepository) ListTemplates(filter *types.TemplateFilter) ([]type
 		}
 		t.ThumbnailURL = thumbnailURL.String
 		t.TextContent = textContent.String
+		t.MJMLContent = mjmlContent.String
 		templates = append(templates, t)
 	}
 	return templates, total, nil
@@ -131,6 +134,14 @@ func (r *templateRepository) UpdateTemplate(id uint64, userID uint64, req *types
 	if req.Subject != "" {
 		query += ", subject = ?"
 		args = append(args, req.Subject)
+	}
+	if req.Type != "" {
+		query += ", type = ?"
+		args = append(args, req.Type)
+	}
+	if req.MJMLContent != "" {
+		query += ", mjml_content = ?"
+		args = append(args, req.MJMLContent)
 	}
 	if req.HTMLContent != "" {
 		query += ", html_content = ?"
@@ -174,9 +185,9 @@ func (r *templateRepository) DuplicateTemplate(id uint64, userID uint64) error {
 	newName := "Copy of " + t.Name
 	// Basic implementation, doesn't handle "Copy of Copy of..." collision logic perfectly but good enough
 
-	query := `INSERT INTO email_templates (user_id, name, subject, html_content, text_content, is_default, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`
-	_, err = r.db.Exec(query, userID, newName, t.Subject, t.HTMLContent, t.TextContent, false) // Default to false
+	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, is_default, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
+	_, err = r.db.Exec(query, userID, newName, t.Subject, t.Type, t.MJMLContent, t.HTMLContent, t.TextContent, false) // Default to false
 	return err
 }
 

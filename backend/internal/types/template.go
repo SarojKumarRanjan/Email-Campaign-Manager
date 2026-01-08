@@ -7,6 +7,8 @@ type TemplateDTO struct {
 	UserID       uint64    `json:"user_id"`
 	Name         string    `json:"name"`
 	Subject      string    `json:"subject"`
+	Type         string    `json:"type"` // 'mjml' or 'html'
+	MJMLContent  string    `json:"mjml_content"`
 	HTMLContent  string    `json:"html_content"`
 	TextContent  string    `json:"text_content"`
 	ThumbnailURL string    `json:"thumbnail_url"`
@@ -19,6 +21,8 @@ type CreateTemplateRequest struct {
 	UserID      uint64 `json:"-"`
 	Name        string `json:"name" binding:"required"`
 	Subject     string `json:"subject" binding:"required"`
+	Type        string `json:"type" binding:"required"`
+	MJMLContent string `json:"mjml_content"`
 	HTMLContent string `json:"html_content" binding:"required"`
 	TextContent string `json:"text_content"`
 	IsDefault   bool   `json:"is_default"`
@@ -28,6 +32,8 @@ type UpdateTemplateRequest struct {
 	UserID      uint64
 	Name        string `json:"name"`
 	Subject     string `json:"subject"`
+	Type        string `json:"type"`
+	MJMLContent string `json:"mjml_content"`
 	HTMLContent string `json:"html_content"`
 	TextContent string `json:"text_content"`
 	IsDefault   *bool  `json:"is_default"`
