@@ -230,6 +230,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("PUT /api/v1/settings", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdateSettings)))
 	mux.Handle("PUT /api/v1/settings/smtp", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdateSMTP)))
 	mux.Handle("POST /api/v1/settings/smtp/test", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.TestSMTP)))
+	mux.Handle("PUT /api/v1/settings/files", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdateFileSettings)))
+	mux.Handle("PUT /api/v1/settings/privacy", middleware.AuthMiddleware(http.HandlerFunc(s.settingsHandler.UpdatePrivacySettings)))
 
 	// Tag Routes
 	mux.Handle("GET /api/v1/tags", middleware.AuthMiddleware(http.HandlerFunc(s.tagHandler.ListTags)))

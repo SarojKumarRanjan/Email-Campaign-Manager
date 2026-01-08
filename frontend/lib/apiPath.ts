@@ -23,6 +23,8 @@ const API_PATH = {
         TEST_SMTP: '/api/v1/settings/smtp/test',
         GET_LIMITS: '/api/v1/settings/limits',
         UPDATE_LIMITS: '/api/v1/settings/limits',
+        UPDATE_FILES: '/api/v1/settings/files',
+        UPDATE_PRIVACY: '/api/v1/settings/privacy',
     },
 
     CONTACTS: {

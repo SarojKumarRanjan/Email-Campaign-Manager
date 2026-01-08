@@ -59,6 +59,8 @@ const deleteAxiosForUseFetch = async (url: string, config?: AxiosRequestConfig) 
     return await api.delete(url, config);
 }
 
+export default api;
+
 export {
     getAxiosForUseFetch,
     postAxiosForUseFetch,

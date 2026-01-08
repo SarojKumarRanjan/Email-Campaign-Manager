@@ -7,27 +7,40 @@ import (
 	"email_campaign/internal/config"
 )
 
-func SendOTP(to string, otp string) error {
-	cfg := config.Load()
+type SMTPSettings struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
 
-	// If SMTP creds are empty, just log it (for demo/dev)
-	if cfg.SMTPUser == "" || cfg.SMTPPass == "" {
-		fmt.Printf("Mock Email to %s: Your OTP is %s\n", to, otp)
+func SendEmail(settings SMTPSettings, to string, subject string, body string) error {
+	// If Host is empty, mock it
+	if settings.Host == "" {
+		fmt.Printf("Mock Email to %s: %s\n", to, body)
 		return nil
 	}
 
-	auth := smtp.PlainAuth("", cfg.SMTPUser, cfg.SMTPPass, cfg.SMTPHost)
+	auth := smtp.PlainAuth("", settings.Username, settings.Password, settings.Host)
 
 	msg := []byte("To: " + to + "\r\n" +
-		"Subject: Email Verification OTP\r\n" +
+		"Subject: " + subject + "\r\n" +
 		"\r\n" +
-		"Your OTP is: " + otp + "\r\n")
+		body + "\r\n")
 
-	addr := fmt.Sprintf("%s:%d", cfg.SMTPHost, cfg.SMTPPort)
-	err := smtp.SendMail(addr, auth, cfg.SMTPUser, []string{to}, msg)
-	if err != nil {
-		return err
+	addr := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+	return smtp.SendMail(addr, auth, settings.Username, []string{to}, msg)
+}
+
+func SendOTP(to string, otp string) error {
+	cfg := config.Load()
+
+	settings := SMTPSettings{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		Username: cfg.SMTPUser,
+		Password: cfg.SMTPPass,
 	}
 
-	return nil
+	return SendEmail(settings, to, "Email Verification OTP", "Your OTP is: "+otp)
 }

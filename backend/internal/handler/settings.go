@@ -16,7 +16,7 @@ func NewSettingsHandler(svc service.SettingsService) *SettingsHandler {
 }
 
 func (h *SettingsHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -32,7 +32,7 @@ func (h *SettingsHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SettingsHandler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -53,7 +53,7 @@ func (h *SettingsHandler) UpdateSettings(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *SettingsHandler) UpdateSMTP(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -74,7 +74,7 @@ func (h *SettingsHandler) UpdateSMTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SettingsHandler) TestSMTP(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(uint64)
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
 	if !ok {
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -92,4 +92,46 @@ func (h *SettingsHandler) TestSMTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SuccessResponse(w, http.StatusOK, "Test email sent successfully", nil)
+}
+
+func (h *SettingsHandler) UpdateFileSettings(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req types.UpdateFileSettingsRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.svc.UpdateFileSettings(userID, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "File settings updated successfully", nil)
+}
+
+func (h *SettingsHandler) UpdatePrivacySettings(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(types.UserIDKey).(uint64)
+	if !ok {
+		utils.ErrorResponse(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req types.UpdatePrivacySettingsRequest
+	if err := utils.ReadJSON(w, r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.svc.UpdatePrivacySettings(userID, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(w, http.StatusOK, "Privacy settings updated successfully", nil)
 }
