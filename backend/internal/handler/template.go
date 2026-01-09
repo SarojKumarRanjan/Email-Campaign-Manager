@@ -233,9 +233,9 @@ func (h *TemplateHandler) PreviewTemplate(w http.ResponseWriter, r *http.Request
 }
 
 func (h *TemplateHandler) UploadTemplateImage(w http.ResponseWriter, r *http.Request) {
-	// Limit 5MB
-	if err := r.ParseMultipartForm(5 << 20); err != nil {
-		utils.ErrorResponse(w, http.StatusBadRequest, "File too large")
+	// Limit 10MB
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

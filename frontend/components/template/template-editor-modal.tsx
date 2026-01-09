@@ -13,9 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, X, Loader2, Code2, Layout } from "lucide-react";
+import { Save, X, Loader2, Code2, Layout, Upload, Image as ImageIcon } from "lucide-react";
 import { useFetch, useConfigurableMutation } from "@/hooks/useApiCalls";
-import { getAxiosForUseFetch, postAxiosForUseFetch, putAxiosForUseFetch } from "@/lib/axios";
+import api, { getAxiosForUseFetch, postAxiosForUseFetch, putAxiosForUseFetch } from "@/lib/axios";
 import API_PATH from "@/lib/apiPath";
 import { Template, CreateTemplateRequest, UpdateTemplateRequest } from "@/types/template";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ const templateSchema = z.object({
     subject: z.string().min(1, "Subject is required"),
     type: z.enum(["mjml", "html"]),
     is_default: z.boolean().optional(),
+    thumbnail_url: z.string().optional(),
 });
 
 type TemplateFormData = z.infer<typeof templateSchema>;
@@ -46,6 +47,7 @@ export function TemplateEditorModal({
     const [mjmlContent, setMjmlContent] = useState(defaultMjmlTemplate);
     const [htmlContent, setHtmlContent] = useState(defaultHtmlTemplate);
     const [renderedHtml, setRenderedHtml] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
 
     const {
         register,
@@ -105,6 +107,8 @@ export function TemplateEditorModal({
         }
     );
 
+
+
     // Populate form when editing
     useEffect(() => {
         if (existingTemplate && isEditMode) {
@@ -113,6 +117,7 @@ export function TemplateEditorModal({
                 subject: existingTemplate.subject,
                 type: existingTemplate.type || "mjml",
                 is_default: existingTemplate.is_default,
+                thumbnail_url: existingTemplate.thumbnail_url || "",
             });
             // Load content based on type
             if (existingTemplate.type === "mjml") {
@@ -132,10 +137,12 @@ export function TemplateEditorModal({
                 subject: "",
                 type: "mjml",
                 is_default: false,
+                thumbnail_url: "",
             });
             setMjmlContent(defaultMjmlTemplate);
             setHtmlContent(defaultHtmlTemplate);
             setRenderedHtml("");
+            setIsUploading(false);
         }
     }, [open, isEditMode, reset]);
 
@@ -161,6 +168,7 @@ export function TemplateEditorModal({
         setMjmlContent(defaultMjmlTemplate);
         setHtmlContent(defaultHtmlTemplate);
         setRenderedHtml("");
+        setIsUploading(false);
         onClose();
     };
 
@@ -184,6 +192,40 @@ export function TemplateEditorModal({
                 url: { template: API_PATH.TEMPLATES.CREATE_TEMPLATE },
                 data: payload as CreateTemplateRequest,
             });
+        }
+    };
+    
+    const thumbnailUrl = watch("thumbnail_url");
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check size (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert("File is too large. Max 10MB.");
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await api.post(API_PATH.TEMPLATES.UPLOAD_TEMPLATE_IMAGE, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            if (response.data?.data?.url) {
+                setValue("thumbnail_url", response.data.data.url, { shouldDirty: true });
+            }
+        } catch (err: any) {
+            console.error("Upload failed:", err);
+            const errMsg = err.response?.data?.message || err.message || "Failed to upload image.";
+            alert(errMsg);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -274,6 +316,29 @@ export function TemplateEditorModal({
                                             Set as default template
                                         </Label>
                                     </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Thumbnail Image</Label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative size-10 rounded border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                                            {thumbnailUrl ? (
+                                                <img src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${thumbnailUrl}`} alt="Thumbnail" className="size-full object-cover" />
+                                            ) : (
+                                                <ImageIcon className="size-5 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="h-9 py-1 px-2 text-xs"
+                                                disabled={isUploading}
+                                            />
+                                        </div>
+                                        {isUploading && <Loader2 className="size-4 animate-spin text-primary shrink-0" />}
+                                    </div>
+                                    <Input type="hidden" {...register("thumbnail_url")} />
                                 </div>
                             </div>
                         )}

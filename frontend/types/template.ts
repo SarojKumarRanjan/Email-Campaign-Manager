@@ -20,6 +20,7 @@ export interface CreateTemplateRequest {
     html_content: string;
     mjml_content?: string;
     text_content?: string;
+    thumbnail_url?: string;
     is_default?: boolean;
 }
 
@@ -30,6 +31,7 @@ export interface UpdateTemplateRequest {
     html_content?: string;
     mjml_content?: string;
     text_content?: string;
+    thumbnail_url?: string;
     is_default?: boolean;
 }
 

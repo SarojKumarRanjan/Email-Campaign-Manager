@@ -135,10 +135,10 @@ export const TemplateCard = ({
                 </div>
 
                 {/* Preview Thumbnail */}
-                <div className="aspect-video bg-muted/50 rounded-md border border-border mb-4 flex items-center justify-center overflow-hidden">
+                <div className="aspect-4/3 bg-muted/50 rounded-md border border-border mb-4 flex items-center justify-center overflow-hidden">
                     {template?.thumbnail_url ? (
                         <img 
-                            src={template.thumbnail_url} 
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${template?.thumbnail_url}`} 
                             alt={template.name}
                             className="w-full h-full object-cover"
                         />

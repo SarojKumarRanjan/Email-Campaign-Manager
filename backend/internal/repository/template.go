@@ -25,10 +25,10 @@ func NewTemplateRepository(db *sql.DB) TemplateRepository {
 }
 
 func (r *templateRepository) CreateTemplate(template *types.CreateTemplateRequest) error {
-	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, is_default, created_at, updated_at) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
+	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, thumbnail_url, is_default, created_at, updated_at) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
 
-	_, err := r.db.Exec(query, template.UserID, template.Name, template.Subject, template.Type, template.MJMLContent, template.HTMLContent, template.TextContent, template.IsDefault)
+	_, err := r.db.Exec(query, template.UserID, template.Name, template.Subject, template.Type, template.MJMLContent, template.HTMLContent, template.TextContent, template.ThumbnailURL, template.IsDefault)
 	return err
 }
 
@@ -151,6 +151,10 @@ func (r *templateRepository) UpdateTemplate(id uint64, userID uint64, req *types
 		query += ", text_content = ?"
 		args = append(args, req.TextContent)
 	}
+	if req.ThumbnailURL != "" {
+		query += ", thumbnail_url = ?"
+		args = append(args, req.ThumbnailURL)
+	}
 	if req.IsDefault != nil {
 		query += ", is_default = ?"
 		args = append(args, *req.IsDefault)
@@ -185,9 +189,9 @@ func (r *templateRepository) DuplicateTemplate(id uint64, userID uint64) error {
 	newName := "Copy of " + t.Name
 	// Basic implementation, doesn't handle "Copy of Copy of..." collision logic perfectly but good enough
 
-	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, is_default, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
-	_, err = r.db.Exec(query, userID, newName, t.Subject, t.Type, t.MJMLContent, t.HTMLContent, t.TextContent, false) // Default to false
+	query := `INSERT INTO email_templates (user_id, name, subject, type, mjml_content, html_content, text_content, thumbnail_url, is_default, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`
+	_, err = r.db.Exec(query, userID, newName, t.Subject, t.Type, t.MJMLContent, t.HTMLContent, t.TextContent, t.ThumbnailURL, false) // Default to false
 	return err
 }
 

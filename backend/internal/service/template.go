@@ -77,7 +77,7 @@ func (s *templateService) PreviewTemplate(req *types.PreviewTemplateRequest) (st
 
 func (s *templateService) UploadTemplateImage(file io.Reader, filename string) (string, error) {
 	// Ensure upload directory exists
-	uploadDir := "./uploads/templates"
+	uploadDir := "./uploads"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		return "", err
 	}
@@ -98,5 +98,5 @@ func (s *templateService) UploadTemplateImage(file io.Reader, filename string) (
 	}
 
 	// Return relative URL
-	return fmt.Sprintf("/uploads/templates/%s", newFilename), nil
+	return fmt.Sprintf("/uploads/%s", newFilename), nil
 }
