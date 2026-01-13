@@ -1,18 +1,10 @@
 
-import { DashboardTable } from "@/components/dashboard/dashboard-table"
-import { SectionCards } from "@/components/dashboard/section-cards"
-
-import data from "./data.json"
-
 export default function Page() {
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <SectionCards />
-
-          <DashboardTable data={data} />
-        </div>
+    <div className="flex flex-1 items-center justify-center p-8">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">Dashboard Placeholder</h1>
+        <p className="text-muted-foreground mt-2">The dashboard has been moved to /demo/dashboard</p>
       </div>
     </div>
   )

@@ -22,7 +22,11 @@ export const contactSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     campaign: z.string(),
-    tags: z.array(z.string()),
+    tags: z.array(z.object({
+        id: z.number(),
+        name: z.string(),
+        color: z.string(),
+    })),
     created_at: z.string(),
     updated_at: z.string(),
     tag_ids: z.array(z.number()).optional(),

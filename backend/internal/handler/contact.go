@@ -97,6 +97,14 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	}
 	filter.UserID = userID
 
+	filter.UserID = userID
+
+	// Parse include_options
+	includeOptions := query.Get("include_options")
+	if includeOptions != "" {
+		filter.IncludeOptions = strings.Split(includeOptions, ",")
+	}
+
 	contacts, total, err := h.svc.ListContacts(r.Context(), &filter)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -108,6 +116,17 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 		"total": total,
 		"page":  filter.Page,
 		"limit": filter.Limit,
+	}
+
+	if len(filter.IncludeOptions) > 0 {
+		meta, err := h.svc.GetMasterValues(userID, filter.IncludeOptions)
+		if err != nil {
+			utils.ErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		for k, v := range meta {
+			response[k] = v
+		}
 	}
 
 	utils.SuccessResponse(w, http.StatusOK, "Contacts retrieved successfully", response)

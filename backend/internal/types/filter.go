@@ -19,6 +19,7 @@ type ContactFilter struct {
 	SortOrder    string        `json:"sort_order" form:"sort_order"`
 	JoinOperator string        `json:"join_operator" form:"join_operator"`
 	Filters      []FilterField `json:"filters" form:"filters"`
+	IncludeOptions []string    `json:"include_options" form:"include_options"`
 }
 
 type Filter struct {

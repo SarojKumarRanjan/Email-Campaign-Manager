@@ -60,7 +60,7 @@ func NewServer(cfg *config.Config, db database.Service) *http.Server {
 	// Services
 	authSvc := service.NewAuthService(authRepo, userRepo)
 	userSvc := service.NewUserService(userRepo)
-	contactSvc := service.NewContactService(contactRepo)
+	contactSvc := service.NewContactService(contactRepo, campaignRepo, tagRepo)
 	templateSvc := service.NewTemplateService(templateRepo)
 	campaignSvc := service.NewCampaignService(campaignRepo)
 	analyticsSvc := service.NewAnalyticsService(analyticsRepo)

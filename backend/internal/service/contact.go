@@ -23,14 +23,21 @@ type ContactService interface {
 	BulkDeleteContacts(userID uint64, req *types.BulkDeleteContactsRequest) error
 	ImportContacts(userID uint64, req *types.ImportContactsRequest, fileType string) error
 	ExportContacts(userID uint64, filter *types.ContactFilter, format string) ([]byte, error)
+	GetMasterValues(userID uint64, options []string) (map[string]interface{}, error)
 }
 
 type contactService struct {
-	repo repository.ContactRepository
+	repo         repository.ContactRepository
+	campaignRepo repository.CampaignRepository
+	tagRepo      repository.TagRepository
 }
 
-func NewContactService(repo repository.ContactRepository) ContactService {
-	return &contactService{repo: repo}
+func NewContactService(repo repository.ContactRepository, campaignRepo repository.CampaignRepository, tagRepo repository.TagRepository) ContactService {
+	return &contactService{
+		repo:         repo,
+		campaignRepo: campaignRepo,
+		tagRepo:      tagRepo,
+	}
 }
 
 func (s *contactService) CreateContact(req *types.CreateContactRequest) error {

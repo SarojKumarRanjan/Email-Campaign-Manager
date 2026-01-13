@@ -61,6 +61,7 @@ export default function ContactList() {
         limit: pageSize,
         sort_by: sortBy,
         sort_order: sortOrder,
+        include_options: "CAMPAIGNS,TAGS",
         filters: JSON.stringify(
           filters.map((item) => {
             if (!Array.isArray(item.value)) {
@@ -98,6 +99,11 @@ export default function ContactList() {
     setFilters(newFilters);
   };
 
+  const campaigns = (contactsList as any)?.campaigns || [];
+  const tags = (contactsList as any)?.tags || [];
+
+ /*  console.log(campaigns, tags); */
+
   const filterFileds: DataTableFilterField<Contact>[] = [
     {
       id: "email",
@@ -107,20 +113,18 @@ export default function ContactList() {
     {
       id: "campaign",
       label: "Campaign",
-      options: [
-        { value: "Campaign 1", label: "Campaign 1" },
-        { value: "Campaign 2", label: "Campaign 2" },
-        { value: "Campaign 3", label: "Campaign 3" },
-      ],
+      options: campaigns.map((c: any) => ({
+        value: c.name, 
+        label: c.name
+      })),
     },
     {
       id: "tags",
       label: "Tags",
-      options: [
-        { value: "Tag 1", label: "Tag 1" },
-        { value: "Tag 2", label: "Tag 2" },
-        { value: "Tag 3", label: "Tag 3" },
-      ],
+      options: tags.map((t: any) => ({
+        value: t.id.toString(), 
+        label: t.name
+      })),
     },
     {
       id: "created_at",
@@ -166,9 +170,9 @@ export default function ContactList() {
         if (!value) return "-";
         return (
           <div className="grid grid-cols-3 gap-2">
-            {value.map((tag: string) => (
-              <Badge key={tag} variant={"secondary"} color="success">
-                {tag}
+            {value.map((tag: any) => (
+              <Badge key={tag.id} variant={"secondary"} style={{backgroundColor: tag.color}} color="success">
+                {tag.name}
               </Badge>
             ))}
           </div>

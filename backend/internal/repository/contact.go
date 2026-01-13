@@ -189,6 +189,7 @@ func (r *contactRepository) ListContacts(ctx context.Context, filter *types.Cont
 	}
 	defer rows.Close()
 	var contacts []types.ContactListDTO
+	var contactIDs []uint64 // Collect IDs
 	for rows.Next() {
 		var c types.ContactListDTO
 		err := rows.Scan(
@@ -199,7 +200,52 @@ func (r *contactRepository) ListContacts(ctx context.Context, filter *types.Cont
 			return nil, 0, err
 		}
 		contacts = append(contacts, c)
+		contactIDs = append(contactIDs, c.ID)
 	}
+
+	// Fetch tags if there are contacts
+	if len(contactIDs) > 0 {
+		// Create a map to associate tags with contacts
+		contactTagsMap := make(map[uint64][]types.Tag)
+
+		// Convert IDs to string for query
+		placeholders := make([]string, len(contactIDs))
+		tagArgs := make([]interface{}, len(contactIDs))
+		for i, id := range contactIDs {
+			placeholders[i] = "?"
+			tagArgs[i] = id
+		}
+
+		tagQuery := fmt.Sprintf(`SELECT t.id, t.name, t.color, ct.contact_id 
+		                         FROM tags t 
+		                         JOIN contact_tags ct ON t.id = ct.tag_id 
+		                         WHERE ct.contact_id IN (%s)`, strings.Join(placeholders, ","))
+
+		tagRows, err := r.db.QueryContext(ctx, tagQuery, tagArgs...)
+		if err != nil {
+			return nil, 0, err
+		}
+		defer tagRows.Close()
+
+		for tagRows.Next() {
+			var t types.Tag
+			var contactID uint64
+			if err := tagRows.Scan(&t.ID, &t.Name, &t.Color, &contactID); err != nil {
+				return nil, 0, err
+			}
+			contactTagsMap[contactID] = append(contactTagsMap[contactID], t)
+		}
+
+		// Assign tags to contacts
+		for i := range contacts {
+			if tags, ok := contactTagsMap[contacts[i].ID]; ok {
+				contacts[i].Tags = tags
+			} else {
+				contacts[i].Tags = []types.Tag{} // Ensure non-nil
+			}
+		}
+	}
+
 	return contacts, total, nil
 }
 
