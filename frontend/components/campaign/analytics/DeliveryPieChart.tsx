@@ -19,11 +19,7 @@ export const DeliveryPieChart: React.FC<DeliveryPieChartProps> = ({
     const isDark = theme === 'dark';
 
     const option = {
-        labelLine: {
-            show: true,
-            smooth: true,
-            
-        },  
+          
         tooltip: {
             trigger: 'item',
             formatter: '{b}: {c} ({d}%)'
@@ -41,6 +37,11 @@ export const DeliveryPieChart: React.FC<DeliveryPieChartProps> = ({
                 type: 'pie',
                 radius: '70%',
                 center: ['50%', '55%'],
+                labelLine: {
+                    show: true,
+                    smooth: true,
+                    
+                },
                 itemStyle: {
                     borderRadius: 4,
                     borderColor: isDark ? '#1f2937' : '#fff',

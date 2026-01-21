@@ -23,8 +23,8 @@ export function CampaignComparisonChart({ data, isLoading }: CampaignComparisonC
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Campaign Performance</CardTitle>
-          <CardDescription>Comparing rates across top campaigns</CardDescription>
+          <CardTitle>Campaign Performance Breakdown</CardTitle>
+          <CardDescription>Breakdown of delivery and engagement rates</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] w-full" />
@@ -43,13 +43,14 @@ export function CampaignComparisonChart({ data, isLoading }: CampaignComparisonC
       },
     },
     legend: {
-      data: ["Open Rate", "Click Rate", "Bounce Rate"],
+      data: ["Clicked", "Opened", "Delivered"],
       bottom: 0,
     },
     grid: {
       left: "3%",
       right: "4%",
-      bottom: "10%",
+      bottom: "12%",
+      top: "5%",
       containLabel: true,
     },
     xAxis: [
@@ -61,13 +62,15 @@ export function CampaignComparisonChart({ data, isLoading }: CampaignComparisonC
         },
         axisLabel: {
           interval: 0,
-          rotate: 30
+          rotate: 30,
+          fontSize: 10
         }
       },
     ],
     yAxis: [
       {
         type: "value",
+        max: 100,
         axisLabel: {
           formatter: "{value}%",
         },
@@ -75,25 +78,31 @@ export function CampaignComparisonChart({ data, isLoading }: CampaignComparisonC
     ],
     series: [
       {
-        name: "Open Rate",
+        name: "Delivered",
         type: "bar",
-        barWidth: "20%",
-        data: comparisonData.map(c => c.open_rate),
-        itemStyle: { color: "#10b981" }
+        stack: "total",
+        barWidth: "40%",
+        data: comparisonData.map(c => (100 - c.open_rate).toFixed(2)),
+        itemStyle: { color: "#22c55e" }
       },
       {
-        name: "Click Rate",
+        name: "Opened",
         type: "bar",
-        barWidth: "20%",
-        data: comparisonData.map(c => c.click_rate),
-        itemStyle: { color: "#3b82f6" }
+        stack: "total",
+        barWidth: "40%",
+        data: comparisonData.map(c => (c.open_rate - c.click_rate).toFixed(2)),
+        itemStyle: { color: "#eab308" }
       },
       {
-        name: "Bounce Rate",
+        name: "Clicked",
         type: "bar",
-        barWidth: "20%",
-        data: comparisonData.map(c => c.bounce_rate),
-        itemStyle: { color: "#f43f5e" }
+        stack: "total",
+        barWidth: "40%",
+        data: comparisonData.map(c => c.click_rate.toFixed(2)),
+        itemStyle: { 
+          color: "#a855f7",
+          borderRadius: [4, 4, 0, 0]
+        }
       },
     ],
   }
@@ -101,8 +110,8 @@ export function CampaignComparisonChart({ data, isLoading }: CampaignComparisonC
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Campaign Performance</CardTitle>
-        <CardDescription>Comparison of rates across your latest campaigns</CardDescription>
+        <CardTitle>Campaign Performance Breakdown</CardTitle>
+        <CardDescription>Comparison of delivery and engagement across campaigns</CardDescription>
       </CardHeader>
       <CardContent>
         <BaseChart option={option} height="300px" />

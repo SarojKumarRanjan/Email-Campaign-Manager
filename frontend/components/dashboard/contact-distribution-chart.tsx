@@ -37,39 +37,34 @@ export function ContactDistributionChart({ stats, isLoading }: ContactDistributi
   const unsubscribed = (stats?.total_contacts ?? 0) - subscribed
 
   const option: EChartsOption = {
-    tooltip: {
-      trigger: "item",
-      formatter: "{b}: {c} ({d}%)",
-    },
-    legend: {
-      orient: "vertical",
-      left: "left",
-      bottom: "0",
-    },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}: {c} ({d}%)'
+        },
+        legend: {
+            top: '0%',
+            left: 'center',
+            
+        },
     series: [
       {
         name: "Contacts",
         type: "pie",
-        radius: ["40%", "70%"],
-        avoidLabelOverlap: false,
+        radius: '70%',
+        labelLine: {
+            show: true,
+            smooth: true,
+            
+        },
+        center: ['50%', '55%'],
         itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
+            borderRadius: 4,
+            borderWidth: 1
         },
         label: {
-          show: false,
-          position: "center",
-        },
-        emphasis: {
-          label: {
             show: true,
-            fontSize: 20,
-            fontWeight: "bold",
-          },
-        },
-        labelLine: {
-          show: false,
+            position: 'outside',
+            formatter: '{b}: {c} ({d}%)'
         },
         data: [
           { value: subscribed, name: "Subscribed", itemStyle: { color: "#10b981" } },
