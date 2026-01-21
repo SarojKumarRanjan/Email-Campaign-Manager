@@ -78,6 +78,7 @@ type SendTestEmailRequest struct {
 
 type CampaignStatsDTO struct {
 	CampaignID        uint64    `json:"campaign_id"`
+	Name              string    `json:"name"`
 	TotalRecipients   int       `json:"total_recipients"`
 	SentCount         int       `json:"sent_count"`
 	DeliveredCount    int       `json:"delivered_count"`

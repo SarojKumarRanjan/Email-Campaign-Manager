@@ -202,7 +202,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Analytics Routes (Detailed)
 	mux.Handle("GET /api/v1/analytics/dashboard", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetDashboardStats)))
 	mux.Handle("GET /api/v1/analytics/campaigns/{id}/timeline", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetCampaignTimeline)))
-	mux.Handle("POST /api/v1/analytics/campaigns/compare", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetCampaignComparison)))
+	mux.Handle("GET /api/v1/analytics/campaigns/compare", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetCampaignComparison)))
 	mux.Handle("GET /api/v1/analytics/contacts/{id}/engagement", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetContactEngagement)))
 	mux.Handle("GET /api/v1/analytics/tags/{id}/performance", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetTagPerformance)))
 	mux.Handle("GET /api/v1/analytics/send-volume", middleware.AuthMiddleware(http.HandlerFunc(s.analyticsHandler.GetSendVolume)))

@@ -3,16 +3,30 @@ package types
 import "time"
 
 type ActivityDTO struct {
-	ID   string
-	Type string
-}
-type TimelinePoint struct {
-	Date  string
-	Count int
+	ID           int       `json:"id"`
+	Type         string    `json:"type"`
+	Description  string    `json:"description"`
+	CampaignName string    `json:"campaign_name,omitempty"`
+	ContactEmail string    `json:"contact_email,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
-type VolumePoint struct{}
-type TrendPoint struct{}
+type TimelinePoint struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
+type VolumePoint struct {
+	Date      string `json:"date"`
+	SentCount int    `json:"sent_count"`
+}
+
+type TrendPoint struct {
+	Period     string  `json:"period"`
+	OpenRate   float64 `json:"open_rate"`
+	ClickRate  float64 `json:"click_rate"`
+	BounceRate float64 `json:"bounce_rate"`
+}
 type QuickStatsDTO struct{}
 
 type DashboardStatsDTO struct {

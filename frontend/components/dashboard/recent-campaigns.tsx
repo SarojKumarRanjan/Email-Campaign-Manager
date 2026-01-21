@@ -143,10 +143,10 @@ export function RecentCampaigns({ campaigns, isLoading }: RecentCampaignsProps) 
                   {campaign.sent_count.toLocaleString()}
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="tabular-nums">{campaign.open_rate.toFixed(1)}%</span>
+                  <span className="tabular-nums">{campaign.open_rate?.toFixed(1)}%</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="tabular-nums">{campaign.click_rate.toFixed(1)}%</span>
+                  <span className="tabular-nums">{campaign.click_rate?.toFixed(1)}%</span>
                 </TableCell>
               </TableRow>
             ))}
